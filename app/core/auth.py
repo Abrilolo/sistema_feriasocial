@@ -1,4 +1,6 @@
-from jose import JWTError, jwt
+from jose import JWTError
+from jose import jwt
+
 from fastapi import HTTPException, status
 
 from app.core.config import settings
