@@ -7,15 +7,15 @@ from app.core.config import settings
 def decode_token(token: str) -> dict:
     """
     Decodifica y valida el JWT.
-    - Verifica firma (SECRET_KEY)
+    - Verifica firma (JWT_SECRET)
     - Verifica expiración (exp)
     Devuelve el payload si es válido.
     """
     try:
         payload = jwt.decode(
             token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALG],
         )
         return payload
     except JWTError:

@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
 
-# ✅ Swagger detecta esto y crea el botón Authorize si hay endpoints que lo dependan
+# Swagger detecta esto y crea el botón Authorize si hay endpoints que lo dependan
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 

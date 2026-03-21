@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Socio{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+  <div class="panel">
+    <h1>Panel de Socio</h1>
+    <p class="muted">Administra tus proyectos, códigos temporales y alumnos registrados.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Mis proyectos</h2>
+    <div id="projectsError" class="error" style="display:none;"></div>
+    <div id="projectsContainer" class="project-grid"></div>
+  </div>
+
+  <div class="panel" id="projectDetailPanel" style="display:none;">
+    <div class="panel-header">
+      <div>
+        <h2 id="detailProjectName">Detalle del proyecto</h2>
+        <p class="muted" id="detailProjectDescription"></p>
+      </div>
+      <button id="refreshDetailBtn" type="button">Actualizar</button>
+    </div>
+
+    <div id="detailError" class="error" style="display:none;"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Capacidad</span>
+        <strong id="statCapacity">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Lugares ocupados</span>
+        <strong id="statTaken">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Lugares disponibles</span>
+        <strong id="statRemaining">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Códigos activos</span>
+        <strong id="statActiveCodes">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Códigos usados</span>
+        <strong id="statUsedCodes">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Códigos vencidos</span>
+        <strong id="statExpiredCodes">0</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="generateCodePanel" style="display:none;">
+    <h2>Generar código temporal</h2>
+
+    <form id="generateCodeForm" class="form-inline">
+      <label for="expiresInMinutes">Vigencia (minutos)</label>
+      <input
+        type="number"
+        id="expiresInMinutes"
+        name="expires_in_minutes"
+        min="1"
+        max="120"
+        value="10"
+        required
+      />
+      <button type="submit">Generar código</button>
+    </form>
+
+    <div id="generateCodeError" class="error" style="display:none;"></div>
+    <div id="generateCodeSuccess" class="success" style="display:none;"></div>
+  </div>
+
+  <div class="panel" id="codesPanel" style="display:none;">
+    <div class="panel-header">
+      <h2>Códigos del proyecto</h2>
+      <button id="refreshCodesBtn" type="button">Actualizar códigos</button>
+    </div>
+
+    <div id="codesError" class="error" style="display:none;"></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Activo</th>
+            <th>Usado</th>
+            <th>Vencido</th>
+            <th>Expira</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="codesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="studentsPanel" style="display:none;">
+    <div class="panel-header">
+      <h2>Estudiantes registrados</h2>
+      <div class="actions-inline">
+        <button id="refreshStudentsBtn" type="button">Actualizar estudiantes</button>
+        <button id="exportStudentsBtn" type="button">Exportar CSV</button>
+      </div>
+    </div>
+
+    <div id="studentsError" class="error" style="display:none;"></div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Matrícula</th>
+            <th>Correo</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Registrado</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

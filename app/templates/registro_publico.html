@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Registro Público{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="card fade-in-up">
+    <div class="section-logo-wrap">
+      <img
+        src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
+        alt="Servicio Social"
+        class="section-logo"
+      />
+    </div>
+
+    <h1>Registro de proyecto</h1>
+    <p class="muted">
+      Ingresa tu matrícula, correo institucional y el código temporal proporcionado por el socio.
+    </p>
+
+    <form id="registroForm" class="form">
+      <div>
+        <label for="matricula">Matrícula</label>
+        <input type="text" id="matricula" name="matricula" placeholder="Ej. A01234567" required />
+      </div>
+
+      <div>
+        <label for="registroEmail">Correo</label>
+        <input type="email" id="registroEmail" name="email" placeholder="tu_correo@tec.mx" required />
+      </div>
+
+      <div>
+        <label for="codigo">Código temporal</label>
+        <input type="text" id="codigo" name="codigo" placeholder="Ingresa el código" required />
+      </div>
+
+      <div id="registroError" class="error" style="display:none;"></div>
+      <div id="registroSuccess" class="success" style="display:none;"></div>
+
+      <button type="submit">Registrar proyecto</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
