@@ -15,10 +15,6 @@ app = FastAPI(title="Feria Servicio Social Tec")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-@app.get("/")
-def root():
-    return {"status": "ok"}
-
 
 @app.get("/health")
 def health():
