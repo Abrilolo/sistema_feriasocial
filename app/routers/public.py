@@ -9,6 +9,7 @@ from app.models.student import Student
 from app.models.checkin import Checkin
 from app.models.temp_code import TempCode
 from app.models.project import Project
+from app.models.user import User
 from app.models.registration import Registration
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -221,20 +222,21 @@ def generate_qr_token(
 
 @router.get("/projects")
 def get_projects(db: Session = Depends(get_db)):
-    # Traemos solo proyectos activos
-    projects = db.query(Project).filter(Project.is_active == True).all()
+    # Traemos proyectos activos y nos unimos con User para obtener el nombre de la organización
+    query = db.query(Project, User).join(User, Project.owner_user_id == User.id).filter(Project.is_active == True)
+    results = query.all()
     
-    result = []
-    for p in projects:
+    output = []
+    for p, u in results:
         # Calcular cupo disponible
         current_regs = db.query(Registration).filter(Registration.project_id == p.id).count()
         available = max(0, p.capacity - current_regs)
         
-        result.append({
+        output.append({
             "id": str(p.id),
             "name": p.name,
             "description": p.description,
-            "organization": "Socio Formador",  # Podríamos traer el nombre del owner_user si quisiéramos
+            "organization": u.organization_name or "Socio Formador",
             "image_url": f"/static/img/projects/{p.image_filename}" if p.image_filename else None,
             "capacity": p.capacity,
             "available": available,
@@ -245,4 +247,4 @@ def get_projects(db: Session = Depends(get_db)):
             "clave": p.clave_programa or "N/A"
         })
     
-    return result
+    return output
