@@ -19,6 +19,7 @@
     <form id="qrForm" class="form" style="margin-top: 20px;">
       <label>Matrícula <input type="text" id="matricula" placeholder="Ej. A01234567" required /></label>
       <label>Correo <input type="email" id="email" placeholder="tu_correo@tec.mx" required /></label>
+      <label>Carrera (Siglas) <input type="text" id="career" placeholder="Ej. ITC, IDS, IMA" required /></label>
       <button type="submit" style="margin-top: 10px; width: 100%;">Generar Código QR</button>
     </form>
 
@@ -33,7 +34,10 @@
         Staff de la feria lo escaneará para darte acceso.
       </p>
       
-      <button id="btnGotoRegister" class="btn-primary" style="margin-top: 20px; width: 100%; display: none;">Siguiente: Registrar Proyecto</button>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <button id="btnExploreCatalog" class="btn-primary" style="background: var(--primary); color: white;">Explorar Catálogo de Proyectos</button>
+        <button id="btnGotoRegister" class="btn-outline" style="display: none;">Siguiente: Registrar Proyecto</button>
+      </div>
     </div>
 
     <div id="qrError" class="error" style="display:none; margin-top: 20px;"></div>
@@ -61,11 +65,12 @@
 
     const matricula = document.getElementById("matricula").value.trim();
     const email = document.getElementById("email").value.trim();
+    const career = document.getElementById("career").value.trim();
 
     try {
       const data = await requestJSON("/public/generate-qr", {
         method: "POST",
-        body: JSON.stringify({ matricula, email })
+        body: JSON.stringify({ matricula, email, career })
       });
 
       qrForm.style.display = "none";
@@ -80,6 +85,13 @@
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
       });
+
+      // Catalog button
+      const btnExploreCatalog = document.getElementById("btnExploreCatalog");
+      btnExploreCatalog.onclick = () => {
+          localStorage.setItem("user_career", data.student.career || "");
+          window.location.href = "/catalogo-proyectos";
+      };
 
       // Show the register button as a nudge
       btnGotoRegister.style.display = "block";

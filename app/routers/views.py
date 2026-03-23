@@ -41,6 +41,11 @@ def registro_page(request: Request):
     return templates.TemplateResponse("registro_publico.html", {"request": request})
 
 
+@router.get("/catalogo-proyectos", response_class=HTMLResponse)
+def catalog_page(request: Request):
+    return templates.TemplateResponse("catalogo_proyectos.html", {"request": request})
+
+
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})

@@ -24,6 +24,7 @@ class RegisterProjectRequest(BaseModel):
 class GenerateQRRequest(BaseModel):
     matricula: str
     email: str
+    career: str | None = None
 
 
 @router.get("/ping")
@@ -192,12 +193,18 @@ def generate_qr_token(
             detail="El correo no coincide con la matrícula registrada.",
         )
 
+    # ACTUALIZACIÓN: Guardar carrera si viene en el payload
+    if payload.career:
+        student.career = payload.career.strip().upper()
+        db.commit()
+
     # 3) Generar token de invitación (QR)
     token_data = {
         "sub": str(student.id),
         "type": "invite",
         "matricula": student.matricula,
-        "name": student.full_name
+        "name": student.full_name,
+        "career": student.career
     }
     token = create_access_token(token_data, expires_delta=timedelta(hours=2))
 
@@ -206,6 +213,36 @@ def generate_qr_token(
         "qr_token": token,
         "student": {
             "matricula": student.matricula,
-            "full_name": student.full_name
+            "full_name": student.full_name,
+            "career": student.career
         }
     }
+
+
+@router.get("/projects")
+def get_projects(db: Session = Depends(get_db)):
+    # Traemos solo proyectos activos
+    projects = db.query(Project).filter(Project.is_active == True).all()
+    
+    result = []
+    for p in projects:
+        # Calcular cupo disponible
+        current_regs = db.query(Registration).filter(Registration.project_id == p.id).count()
+        available = max(0, p.capacity - current_regs)
+        
+        result.append({
+            "id": str(p.id),
+            "name": p.name,
+            "description": p.description,
+            "organization": "Socio Formador",  # Podríamos traer el nombre del owner_user si quisiéramos
+            "image_url": f"/static/img/projects/{p.image_filename}" if p.image_filename else None,
+            "capacity": p.capacity,
+            "available": available,
+            "periodo": p.periodo,
+            "carreras": p.carreras_permitidas,
+            "modalidad": p.modalidad,
+            "horas": p.horas_acreditar,
+            "clave": p.clave_programa or "N/A"
+        })
+    
+    return result

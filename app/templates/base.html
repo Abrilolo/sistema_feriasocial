@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=9" />
 </head>
 <body>
-  {% if request.url.path not in ["/acceso-estudiante", "/inscripcion-proyecto"] %}
+  {% if request.url.path not in ["/acceso-estudiante", "/inscripcion-proyecto", "/catalogo-proyectos"] %}
   <header class="topbar">
     <div class="brand-wrap">
       <img

@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo de Proyectos - Feria Social 2026{% endblock %}
+
+{% block content %}
+<div class="catalog-page">
+  <div class="catalog-header">
+    <h1>Oferta Servicio Social - Febrero - Junio - 2026</h1>
+  </div>
+
+  <div class="catalog-controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="projectSearch" placeholder="Buscar proyecto o socio formador..." />
+    </div>
+
+    <div class="filter-pills">
+      <div class="pill-group">
+        <button class="filter-pill" data-type="horas">
+          <span class="icon">⌛</span> Horas
+        </button>
+        <button class="filter-pill" data-type="career">
+          <span class="icon">🎓</span> Carrera
+        </button>
+        <button class="filter-pill" data-type="modalidad">
+          <span class="icon">📍</span> Modalidad
+        </button>
+        <button class="filter-pill active" data-type="periodo">
+          <span class="icon">📅</span> Periodo: Feb-Jun
+        </button>
+        <button id="btnResetFilters" class="filter-pill reset">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="projectGrid" class="project-grid">
+    <!-- Projects will be rendered here by JS -->
+    <div class="loading-state">Cargando proyectos...</div>
+  </div>
+</div>
+
+<style>
+/* Estilos específicos para el Catálogo tipo Premium */
+.catalog-page {
+    padding: 20px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.catalog-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 30px;
+}
+
+.catalog-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-wrap input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    border-radius: 30px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.search-wrap input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.filter-pills {
+    display: flex;
+    gap: 10px;
+}
+
+.pill-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px dashed #cbd5e1;
+    background: white;
+    font-size: 0.9rem;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.filter-pill:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.filter-pill.active {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: var(--text-dark);
+}
+
+.filter-pill.reset {
+    border-style: solid;
+    background: #f1f5f9;
+}
+
+/* Grid de Proyectos */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+/* Estilo de Tarjeta Premium */
+.project-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #f1f5f9;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.card-banner {
+    height: 180px;
+    position: relative;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.org-logo {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.btn-star {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(4px);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.btn-star:hover {
+    color: #f59e0b;
+}
+
+.card-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.card-org {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+.career-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.tag {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+/* Colores de etiquetas (estilo del Tec) */
+.tag-itc { background-color: #ef4444; }
+.tag-ids { background-color: #3b82f6; }
+.tag-ima { background-color: #10b981; }
+.tag-irs { background-color: #f59e0b; }
+.tag-default { background-color: #64748b; }
+.tag-todas { background-color: #000000; width: auto; padding: 0 12px; border-radius: 15px; font-size: 12px; }
+
+.card-footer {
+    border-top: 1px solid #f1f5f9;
+    padding: 15px 20px;
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-info {
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.clave-text {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.btn-more {
+    background: #0f172a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-more:hover {
+    opacity: 0.9;
+}
+
+.loading-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 100px;
+    color: #64748b;
+    font-style: italic;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script type="module">
+  import { requestJSON } from "{{ url_for('static', path='js/api.js') }}";
+
+  const projectGrid = document.getElementById("projectGrid");
+  const projectSearch = document.getElementById("projectSearch");
+  const btnResetFilters = document.getElementById("btnResetFilters");
+  
+  let allProjects = [];
+  const userCareer = localStorage.getItem("user_career") || "";
+
+  async function loadProjects() {
+      try {
+          allProjects = await requestJSON("/public/projects");
+          renderProjects(allProjects);
+      } catch (err) {
+          projectGrid.innerHTML = `<div class="error">Error al cargar proyectos: ${err.message}</div>`;
+      }
+  }
+
+  function renderProjects(projects) {
+      if (projects.length === 0) {
+          projectGrid.innerHTML = '<div class="loading-state">No se encontraron proyectos con los filtros seleccionados.</div>';
+          return;
+      }
+
+      projectGrid.innerHTML = projects.map(p => {
+          const carreras = p.carreras ? p.carreras.split(',').map(c => c.trim()) : [];
+          
+          let tagsHtml = '';
+          if (carreras.includes("TODAS")) {
+              tagsHtml = '<span class="tag tag-todas">Todas</span>';
+          } else {
+              tagsHtml = carreras.slice(0, 8).map(c => {
+                  const careerClass = `tag-${c.toLowerCase().replace(/\s/g, '')}`;
+                  return `<span class="tag ${careerClass}" title="${c}">${c.substring(0, 3)}</span>`;
+              }).join('');
+              if (carreras.length > 8) {
+                  tagsHtml += `<span class="tag tag-default">+${carreras.length - 8}</span>`;
+              }
+          }
+
+          return `
+            <div class="project-card fade-in-up">
+                <div class="card-banner">
+                    <button class="btn-star">☆</button>
+                    ${p.image_url 
+                        ? `<img src="${p.image_url}" alt="${p.organization}" class="org-logo" />`
+                        : `<div class="org-placeholder" style="font-weight:700; color:#94a3b8; font-size:1.5rem;">${p.organization}</div>`
+                    }
+                </div>
+                <div class="card-body">
+                    <h2 class="card-title">${p.name}</h2>
+                    <p class="card-org">${p.organization}</p>
+                    <div class="career-tags">
+                        ${tagsHtml}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="footer-info">
+                        <span class="clave-text">⚙️ Clave: ${p.clave}</span>
+                        <div class="info-row">
+                            <span>🕒 Hasta ${p.horas} Horas</span>
+                        </div>
+                        <div class="info-row">
+                            <span>📍 ${p.modalidad}</span>
+                        </div>
+                    </div>
+                    <button class="btn-more">Ver más</button>
+                </div>
+            </div>
+          `;
+      }).join('');
+  }
+
+  function applyFilters() {
+      const searchTerm = projectSearch.value.toLowerCase();
+      
+      const filtered = allProjects.filter(p => {
+          const matchSearch = p.name.toLowerCase().includes(searchTerm) || 
+                              p.description.toLowerCase().includes(searchTerm);
+          
+          return matchSearch;
+      });
+      
+      renderProjects(filtered);
+  }
+
+  projectSearch.addEventListener("input", applyFilters);
+  
+  btnResetFilters.addEventListener("click", () => {
+      projectSearch.value = "";
+      renderProjects(allProjects);
+  });
+
+  // Cargar al inicio
+  loadProjects();
+</script>
+{% endblock %}
