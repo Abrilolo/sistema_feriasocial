@@ -33,5 +33,6 @@ def me(user: User = Depends(get_current_user)):
         "id": str(user.id),
         "email": user.email,
         "role": user.role,
+        "organization_name": getattr(user, "organization_name", None),
         "is_active": user.is_active,
     }

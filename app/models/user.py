@@ -19,6 +19,8 @@ class User(Base):
 
     role = Column(String, nullable=False, default="ADMIN")
 
+    organization_name = Column(String, nullable=True)
+
     # Usuario activo
     is_active = Column(Boolean, nullable=False, default=True)
 

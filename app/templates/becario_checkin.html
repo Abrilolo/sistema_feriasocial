@@ -3,10 +3,28 @@
 {% block title %}Panel Becario{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-  <div class="panel">
-    <h1>Panel de Becario</h1>
-    <p>Aquí vamos a poner el check-in del estudiante por QR o manual.</p>
+  <div class="panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h1>📸 Escáner de Acceso</h1>
+    <p class="muted">Apunta la cámara al código QR del estudiante para realizar el check-in.</p>
+    
+    <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-top: 20px; border: 2px solid var(--border); background: #eee;"></div>
+    
+    <div id="scannerResult" style="margin-top: 20px; min-height: 80px;">
+       <div id="scannedInfo" style="display:none; padding: 20px; border-radius: 12px; background: var(--surface-soft); text-align: left;">
+          <h3 id="resName" style="margin-top: 0;">-</h3>
+          <p id="resMatricula" class="muted">-</p>
+          <div id="resStatus" style="margin-top: 10px;"></div>
+       </div>
+    </div>
+    
+    <div id="scannerMessage" style="display:none; margin-top: 20px; padding: 15px; border-radius: 8px;"></div>
+    
+    <button id="btnRestartScanner" class="btn-primary" style="display:none; margin-top: 20px; width: 100%;">Escanear otro código</button>
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script type="module" src="{{ url_for('static', path='js/becario.js') }}?v=1"></script>
 {% endblock %}

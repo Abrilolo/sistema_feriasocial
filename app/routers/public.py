@@ -16,8 +16,14 @@ router = APIRouter(prefix="/public", tags=["public"])
 
 class RegisterProjectRequest(BaseModel):
     matricula: str
-    email: EmailStr
-    temp_code: str
+    email: str
+    temp_code: str | None = None
+    codigo: str | None = None
+
+
+class GenerateQRRequest(BaseModel):
+    matricula: str
+    email: str
 
 
 @router.get("/ping")
@@ -30,9 +36,9 @@ def register_project(
     payload: RegisterProjectRequest,
     db: Session = Depends(get_db),
 ):
-    matricula = payload.matricula.strip()
+    matricula = payload.matricula.strip().upper()
     email = payload.email.strip().lower()
-    temp_code_value = payload.temp_code.strip().upper()
+    temp_code_value = (payload.temp_code or payload.codigo or "").strip().upper()
 
     # 1) Buscar estudiante
     student = db.query(Student).filter(Student.matricula == matricula).first()
@@ -158,4 +164,48 @@ def register_project(
         "student_id": str(student.id),
         "project_id": str(project.id),
         "registration_id": str(registration.id),
+    }
+
+@router.post("/generate-qr")
+def generate_qr_token(
+    payload: GenerateQRRequest,
+    db: Session = Depends(get_db),
+):
+    from app.core.security import create_access_token
+    from datetime import timedelta
+
+    matricula = payload.matricula.strip().upper()
+    email = payload.email.strip().lower()
+
+    # 1) Buscar estudiante
+    student = db.query(Student).filter(Student.matricula == matricula).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Estudiante no encontrado.",
+        )
+
+    # 2) Validar correo
+    if student.email.lower() != email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo no coincide con la matrícula registrada.",
+        )
+
+    # 3) Generar token de invitación (QR)
+    token_data = {
+        "sub": str(student.id),
+        "type": "invite",
+        "matricula": student.matricula,
+        "name": student.full_name
+    }
+    token = create_access_token(token_data, expires_delta=timedelta(hours=2))
+
+    return {
+        "ok": True,
+        "qr_token": token,
+        "student": {
+            "matricula": student.matricula,
+            "full_name": student.full_name
+        }
     }

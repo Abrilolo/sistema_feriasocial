@@ -94,3 +94,7 @@ def admin_page(request: Request):
             "user": user,
         },
     )
+
+@router.get("/estudiante", response_class=HTMLResponse)
+def student_qr_page(request: Request):
+    return templates.TemplateResponse("estudiante_qr.html", {"request": request})

@@ -15,6 +15,7 @@ class Project(Base):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    image_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     capacity: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -28,3 +29,17 @@ class Project(Base):
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    periodo: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    carreras_permitidas: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    objetivo: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    actividades: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    horario: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    competencias_requeridas: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    modalidad: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    lugar_trabajo: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    duracion: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    poblacion_atendida: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    horas_acreditar: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    comentarios_adicionales: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    clave_programa: Mapped[str | None] = mapped_column(String(255), nullable=True)

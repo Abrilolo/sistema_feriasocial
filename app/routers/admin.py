@@ -17,6 +17,13 @@ from app.models.temp_code import TempCode
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+class AdminStudentCreateIn(BaseModel):
+    matricula: str = Field(min_length=1, max_length=50)
+    email: EmailStr
+    full_name: str | None = None
+    auto_checkin: bool = False
+
+
 class AdminUserCreateIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6, max_length=72)
@@ -28,7 +35,38 @@ class AdminProjectCreateIn(BaseModel):
     description: str | None = None
     capacity: int = Field(gt=0)
     owner_user_id: str
+    periodo: str | None = None
+    carreras_permitidas: str | None = None
+    objetivo: str | None = None
+    actividades: str | None = None
+    horario: str | None = None
+    competencias_requeridas: str | None = None
+    modalidad: str | None = None
+    lugar_trabajo: str | None = None
+    duracion: str | None = None
+    poblacion_atendida: str | None = None
+    horas_acreditar: str | None = None
+    comentarios_adicionales: str | None = None
+    clave_programa: str | None = None
 
+class AdminProjectUpdateIn(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=255)
+    description: str | None = None
+    capacity: int | None = Field(None, gt=0)
+    owner_user_id: str | None = None
+    periodo: str | None = None
+    carreras_permitidas: str | None = None
+    objetivo: str | None = None
+    actividades: str | None = None
+    horario: str | None = None
+    competencias_requeridas: str | None = None
+    modalidad: str | None = None
+    lugar_trabajo: str | None = None
+    duracion: str | None = None
+    poblacion_atendida: str | None = None
+    horas_acreditar: str | None = None
+    comentarios_adicionales: str | None = None
+    clave_programa: str | None = None
 
 @router.get("/ping")
 def admin_ping(_=Depends(require_role("ADMIN"))):
@@ -203,6 +241,26 @@ def create_user(
         },
     }
 
+@router.get("/users")
+def list_all_users(
+    db: Session = Depends(get_db),
+    _=Depends(require_role("ADMIN")),
+):
+    users = db.query(User).order_by(User.created_at.desc()).all()
+    results = [
+        {
+            "id": str(u.id),
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "organization_name": getattr(u, "organization_name", None)
+        } for u in users
+    ]
+    return {
+        "ok": True,
+        "users": results
+    }
+
 
 @router.post("/projects", status_code=status.HTTP_201_CREATED)
 def create_project(
@@ -245,6 +303,18 @@ def create_project(
         capacity=payload.capacity,
         owner_user_id=owner.id,
         is_active=True,
+        periodo=payload.periodo.strip() if payload.periodo else None,
+        carreras_permitidas=payload.carreras_permitidas.strip() if payload.carreras_permitidas else None,
+        objetivo=payload.objetivo.strip() if payload.objetivo else None,
+        actividades=payload.actividades.strip() if payload.actividades else None,
+        horario=payload.horario.strip() if payload.horario else None,
+        competencias_requeridas=payload.competencias_requeridas.strip() if payload.competencias_requeridas else None,
+        modalidad=payload.modalidad.strip() if payload.modalidad else None,
+        lugar_trabajo=payload.lugar_trabajo.strip() if payload.lugar_trabajo else None,
+        duracion=payload.duracion.strip() if payload.duracion else None,
+        poblacion_atendida=payload.poblacion_atendida.strip() if payload.poblacion_atendida else None,
+        horas_acreditar=payload.horas_acreditar.strip() if payload.horas_acreditar else None,
+        comentarios_adicionales=payload.comentarios_adicionales.strip() if payload.comentarios_adicionales else None,
     )
 
     try:
@@ -312,6 +382,19 @@ def list_all_projects(
                 "occupancy_percent": occupancy_percent,
                 "is_active": project.is_active,
                 "created_at": project.created_at.isoformat(),
+                "periodo": getattr(project, "periodo", None),
+                "carreras_permitidas": getattr(project, "carreras_permitidas", None),
+                "objetivo": getattr(project, "objetivo", None),
+                "actividades": getattr(project, "actividades", None),
+                "horario": getattr(project, "horario", None),
+                "competencias_requeridas": getattr(project, "competencias_requeridas", None),
+                "modalidad": getattr(project, "modalidad", None),
+                "lugar_trabajo": getattr(project, "lugar_trabajo", None),
+                "duracion": getattr(project, "duracion", None),
+                "poblacion_atendida": getattr(project, "poblacion_atendida", None),
+                "horas_acreditar": getattr(project, "horas_acreditar", None),
+                "comentarios_adicionales": getattr(project, "comentarios_adicionales", None),
+                "clave_programa": getattr(project, "clave_programa", None),
                 "owner": {
                     "id": str(owner.id) if owner else None,
                     "email": owner.email if owner else None,
@@ -324,6 +407,63 @@ def list_all_projects(
         "ok": True,
         "count": len(results),
         "projects": results,
+    }
+
+
+@router.post("/students", status_code=status.HTTP_201_CREATED)
+def create_student_admin(
+    payload: AdminStudentCreateIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role("ADMIN")),
+):
+    matricula = payload.matricula.strip().upper()
+    email = payload.email.strip().lower()
+
+    existing = db.query(Student).filter(
+        (Student.matricula == matricula) | (Student.email == email)
+    ).first()
+    
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Ya existe un estudiante con esa matrícula o correo."
+        )
+
+    student = Student(
+        matricula=matricula,
+        email=email,
+        full_name=payload.full_name.strip() if payload.full_name else None,
+    )
+
+    try:
+        db.add(student)
+        db.commit()
+        db.refresh(student)
+        
+        if payload.auto_checkin:
+            checkin = Checkin(
+                student_id=student.id,
+                becario_user_id=current_user.id,
+                method="ADMIN_MANUAL",
+            )
+            db.add(checkin)
+            db.commit()
+            
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"No se pudo crear el estudiante. {str(e)}",
+        )
+
+    return {
+        "ok": True,
+        "message": "Estudiante creado exitosamente.",
+        "student": {
+            "id": str(student.id),
+            "matricula": student.matricula,
+            "email": student.email,
+        }
     }
 
 
@@ -370,10 +510,10 @@ def list_all_students(
                 "checkin_at": checkin.checked_in_at.isoformat() if checkin else None,
                 "is_registered": registration is not None,
                 "registration_id": str(registration.id) if registration else None,
-                "registered_at": registration.created_at.isoformat() if registration else None,
                 "project": {
                     "id": str(project.id),
                     "name": project.name,
+                    "clave_programa": getattr(project, "clave_programa", None),
                 } if project else None,
             }
         )
@@ -474,6 +614,38 @@ def cancel_registration(
         },
     }
 
+@router.patch("/projects/{project_id}")
+def update_project(
+    project_id: str,
+    payload: AdminProjectUpdateIn,
+    db: Session = Depends(get_db),
+    _=Depends(require_role("ADMIN")),
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Proyecto no encontrado.",
+        )
+
+    update_data = payload.dict(exclude_unset=True)
+    if not update_data:
+        return {"ok": True, "message": "No hay datos para actualizar."}
+
+    for key, value in update_data.items():
+        setattr(project, key, value)
+
+    try:
+        db.commit()
+        db.refresh(project)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar el proyecto: {str(e)}",
+        )
+
+    return {"ok": True, "message": "Proyecto actualizado correctamente."}
 
 @router.patch("/projects/{project_id}/deactivate")
 def deactivate_project(

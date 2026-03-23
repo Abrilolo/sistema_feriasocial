@@ -32,7 +32,7 @@ def create_registration(
     student = (
         db.query(Student)
         .filter(
-            Student.matricula == payload.matricula.strip(),
+            Student.matricula == payload.matricula.strip().upper(),
             Student.email == payload.email.strip().lower(),
         )
         .first()

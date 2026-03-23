@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Mi QR de Entrada{% endblock %}
+
+{% block content %}
+<div class="page-center">
+  <div class="card fade-in-up" style="max-width: 450px; text-align: center;">
+    <div class="section-logo-wrap">
+      <img
+        src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
+        alt="Servicio Social"
+        class="section-logo"
+      />
+    </div>
+
+    <h1>Check-in con QR</h1>
+    <p class="muted">Ingresa tus datos para generar tu código de acceso a la feria.</p>
+
+    <form id="qrForm" class="form" style="margin-top: 20px;">
+      <label>Matrícula <input type="text" id="matricula" placeholder="Ej. A01234567" required /></label>
+      <label>Correo <input type="email" id="email" placeholder="tu_correo@tec.mx" required /></label>
+      <button type="submit" style="margin-top: 10px; width: 100%;">Generar Código QR</button>
+    </form>
+
+    <div id="qrContainer" style="display:none; margin-top: 30px; animation: fadeIn 0.5s ease-out;">
+      <h3 style="color: var(--primary);">¡Listo! Presenta este código</h3>
+      <p id="studentName" style="font-weight: bold; margin-bottom: 20px;"></p>
+      
+      <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content; margin: 0 auto;"></div>
+      
+      <p class="muted" style="margin-top: 20px; font-size: 0.9rem;">
+        Este código es personal e intransferible.<br>
+        Staff de la feria lo escaneará para darte acceso.
+      </p>
+      
+      <button id="btnGotoRegister" class="btn-primary" style="margin-top: 20px; width: 100%; display: none;">Siguiente: Registrar Proyecto</button>
+    </div>
+
+    <div id="qrError" class="error" style="display:none; margin-top: 20px;"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module">
+  import { requestJSON } from "{{ url_for('static', path='js/api.js') }}?v=2";
+
+  const qrForm = document.getElementById("qrForm");
+  const qrContainer = document.getElementById("qrContainer");
+  const qrError = document.getElementById("qrError");
+  const qrcodeDiv = document.getElementById("qrcode");
+  const studentNameEl = document.getElementById("studentName");
+  const btnGotoRegister = document.getElementById("btnGotoRegister");
+
+  qrForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    qrError.style.display = "none";
+    qrContainer.style.display = "none";
+    qrcodeDiv.innerHTML = "";
+
+    const matricula = document.getElementById("matricula").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    try {
+      const data = await requestJSON("/public/generate-qr", {
+        method: "POST",
+        body: JSON.stringify({ matricula, email })
+      });
+
+      qrForm.style.display = "none";
+      qrContainer.style.display = "block";
+      studentNameEl.textContent = data.student.full_name;
+
+      new QRCode(qrcodeDiv, {
+        text: data.qr_token,
+        width: 256,
+        height: 256,
+        colorDark : "#1e293b",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+
+      // Show the register button as a nudge
+      btnGotoRegister.style.display = "block";
+      btnGotoRegister.onclick = () => {
+          window.location.href = "/registro";
+      };
+
+    } catch (err) {
+      qrError.textContent = err.message;
+      qrError.style.display = "block";
+    }
+  });
+</script>
+{% endblock %}
