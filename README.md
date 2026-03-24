@@ -15,6 +15,10 @@ Este es el sistema para la gestión de la Feria de Servicio Social del Tec de Mo
     - `fixes/`: Scripts de mantenimiento y correcciones puntuales (anteriormente en la raíz).
 - `alembic/`: Migraciones de la base de datos.
 
+## Documentación Adicional
+
+- [Guía de Desarrollo Frontend (Stitch)](./STITCH_FRONTEND_GUIDE.md): Instrucciones detalladas para mejorar la interfaz y arquitectura del frontend.
+
 ## Ejecución Local
 
 Para ejecutar el servidor de desarrollo:
