@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Sistema Feria Social{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=9" />
 </head>
+
 <body>
   {% if request.url.path not in ["/acceso-estudiante", "/inscripcion-proyecto", "/catalogo-proyectos"] %}
   <header class="topbar">
     <div class="brand-wrap">
-      <img
-        src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
-        alt="Servicio Social"
-        class="brand-logo"
-      />
+      <img src="{{ url_for('static', path='img/logo-servicio-social.png') }}" alt="Servicio Social"
+        class="brand-logo" />
       <div class="brand-texts">
         <span class="brand-title">Sistema Feria Social</span>
         <span class="brand-subtitle">Gestión de registro y seguimiento</span>
@@ -35,4 +34,5 @@
   <script type="module" src="{{ url_for('static', path='js/auth.js') }}?v=6"></script>
   {% block scripts %}{% endblock %}
 </body>
+
 </html>

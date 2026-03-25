@@ -38,54 +38,46 @@ async function loadSocioProjects() {
     container.innerHTML = projects
       .map(
         (project) => `
-          <div class="project-card modern-project-card" style="display: flex; flex-direction: column; gap: 15px; background: #ffffff; border-radius: 20px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+          <div class="project-card modern-project-card fade-in" style="display: flex; flex-direction: column; gap: 20px; background: #ffffff; border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; transition: all 0.3s ease;">
             <div class="mp-top" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
               <div class="mp-info" style="flex: 1; min-width: 250px;">
-                <h3 style="margin: 0 0 5px 0; font-size: 20px; font-weight: 800; color: #0f172a;">${project.name}</h3>
-                <p style="margin: 0; font-size: 14px; color: #64748b;">${project.description || "Sin descripción"}</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 1.4rem; font-weight: 800; color: #0f172a; letter-spacing: -0.02em;">${project.name}</h3>
+                <p style="margin: 0; font-size: 0.95rem; color: #64748b; line-height: 1.5;">${project.description || "Sin descripción"}</p>
                 
-                <div class="mp-stats-row" style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
+                <div class="mp-stats-row" style="display: flex; gap: 20px; margin-top: 30px; flex-wrap: wrap;">
                   <!-- Capacidad -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #22c55e;">👥</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Capacidad:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.capacity}</strong>
+                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 80px;">
+                     <span style="font-size: 1.5rem; margin-bottom: 5px;">👥</span>
+                     <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Capacidad</span>
+                     <strong style="font-size: 1.5rem; color: #0f172a;">${project.capacity}</strong>
                   </div>
                   <!-- Ocupados -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #3b82f6;">👤</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Ocupados:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.taken_slots}</strong>
+                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 80px; border-left: 1px solid #f1f5f9; padding-left: 20px;">
+                     <span style="font-size: 1.5rem; margin-bottom: 5px;">👤</span>
+                     <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Ocupados</span>
+                     <strong style="font-size: 1.5rem; color: #0f172a;">${project.taken_slots}</strong>
                   </div>
                   <!-- Disponibles -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #eab308;">🪑</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Disponibles:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.remaining_slots}</strong>
-                  </div>
-                  <!-- Códigos -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #a855f7;">🔲</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Códigos activos:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.active_codes}</strong>
-                  </div>
-                  <!-- Estado -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
-                     <span style="font-size: 32px; color: #10b981;">✅</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Estado: <strong>${project.is_active ? 'Activo' : 'Inactivo'}</strong></span>
-                     <span style="background: ${project.is_active ? '#dcfce7' : '#fee2e2'}; color: ${project.is_active ? '#166534' : '#991b1b'}; padding: 4px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; margin-top: 5px;">${project.is_active ? 'Activo' : 'Inactivo'}</span>
+                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 80px; border-left: 1px solid #f1f5f9; padding-left: 20px;">
+                     <span style="font-size: 1.5rem; margin-bottom: 5px;">🪑</span>
+                     <span style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Libres</span>
+                     <strong style="font-size: 1.5rem; color: #0f172a;">${project.remaining_slots}</strong>
                   </div>
                 </div>
               </div>
               
-              <div class="mp-graph" style="width: 220px; height: 140px; display: flex; flex-direction: column;">
-                <span style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 5px;">Actividad Reciente</span>
+              <div class="mp-graph" style="width: 200px; height: 120px; background: #f8fafc; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; border: 1px solid #f1f5f9;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: #475569; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Tendencia</span>
                 <canvas id="miniChart-${project.id}" style="width: 100%; flex: 1;"></canvas>
               </div>
             </div>
 
-            <div class="mp-bottom" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 10px;">
-              <button class="open-project-btn" data-project-id="${project.id}" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Ver detalles ⌄</button>
+            <div class="mp-bottom" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 20px; margin-top: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: ${project.is_active ? '#22c55e' : '#ef4444'};"></span>
+                <span style="font-size: 0.85rem; font-weight: 600; color: #475569;">${project.is_active ? 'Activo' : 'Inactivo'}</span>
+              </div>
+              <button class="open-project-btn" data-project-id="${project.id}" style="background: #f1f5f9; color: #0f172a; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid transparent;">Ver detalles</button>
             </div>
           </div>
         `
@@ -134,18 +126,21 @@ async function loadSocioProjects() {
           safeHide("projectDetailPanel");
           safeHide("generateCodePanel");
           safeHide("studentsPanel");
-          btn.textContent = "Ver detalles ⌄";
+          btn.textContent = "Ver detalles";
           localStorage.setItem("selectedProjectId", "");
           return;
         }
 
         // Reset other buttons
-        document.querySelectorAll(".open-project-btn").forEach(b => b.textContent = "Ver detalles ⌄");
-        btn.textContent = "Ocultar detalles ^";
+        document.querySelectorAll(".open-project-btn").forEach(b => b.textContent = "Ver detalles");
+        btn.textContent = "Ocultar detalles";
 
         localStorage.setItem("selectedProjectId", projectId);
         await loadSocioProjectDetail(projectId);
         await loadSocioStudents(projectId);
+
+        // Smooth scroll to details
+        detailPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
   } catch (error) {
@@ -342,12 +337,14 @@ async function loadSocioStudents(projectId) {
     tbody.innerHTML = students
       .map(
         (student) => `
-          <tr>
-            <td>${student.matricula || "-"}</td>
-            <td>${student.email || "-"}</td>
-            <td>${student.full_name || "-"}</td>
-            <td>${student.status || "-"}</td>
-            <td>${formatDate(student.registered_at)}</td>
+          <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
+            <td style="padding: 15px 20px; font-weight: 700; color: #0f172a;">${student.matricula || "-"}</td>
+            <td style="padding: 15px 20px; color: #475569;">${student.email || "-"}</td>
+            <td style="padding: 15px 20px; font-weight: 600; color: #334155;">${student.full_name || "-"}</td>
+            <td style="padding: 15px 20px;">
+              <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 99px; font-size: 0.8rem; font-weight: 600;">${student.status || "-"}</span>
+            </td>
+            <td style="padding: 15px 20px; color: #94a3b8; font-size: 0.85rem;">${formatDate(student.registered_at)}</td>
           </tr>
         `
       )
@@ -414,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (orgNameSpan && usr.organization_name) {
           orgNameSpan.textContent = usr.organization_name;
         }
-      } catch (e) {}
+      } catch (e) { }
     });
 
   const quickGenerateCodeBtn = document.getElementById("quickGenerateCodeBtn");
