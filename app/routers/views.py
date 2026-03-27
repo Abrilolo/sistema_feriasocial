@@ -36,6 +36,16 @@ def require_roles(request: Request, allowed_roles: list[str]):
     return user
 
 
+@router.get("/inscripcion-proyecto", response_class=HTMLResponse)
+def registro_page(request: Request):
+    return templates.TemplateResponse("registro_publico.html", {"request": request})
+
+
+@router.get("/catalogo-proyectos", response_class=HTMLResponse)
+def catalog_page(request: Request):
+    return templates.TemplateResponse("catalogo_proyectos.html", {"request": request})
+
+
 @router.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -44,11 +54,6 @@ def home(request: Request):
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
-
-
-@router.get("/registro", response_class=HTMLResponse)
-def registro_page(request: Request):
-    return templates.TemplateResponse("registro_publico.html", {"request": request})
 
 
 @router.get("/socio", response_class=HTMLResponse)
@@ -94,3 +99,7 @@ def admin_page(request: Request):
             "user": user,
         },
     )
+
+@router.get("/acceso-estudiante", response_class=HTMLResponse)
+def student_qr_page(request: Request):
+    return templates.TemplateResponse("estudiante_qr.html", {"request": request})

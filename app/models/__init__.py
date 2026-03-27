@@ -4,7 +4,10 @@ from app.models.student import Student
 from app.models.checkin import Checkin
 from app.models.temp_code import TempCode
 from app.models.registration import Registration
-from app.models.event_log import EventLog
+from app.models.student import Student
+from app.models.checkin import Checkin
+from app.models.temp_code import TempCode
+from app.models.registration import Registration
 
 __all__ = [
     "User",
@@ -13,5 +16,4 @@ __all__ = [
     "Checkin",
     "TempCode",
     "Registration",
-    "EventLog",
 ]

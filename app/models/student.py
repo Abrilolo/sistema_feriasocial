@@ -18,5 +18,6 @@ class Student(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
 
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    career: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

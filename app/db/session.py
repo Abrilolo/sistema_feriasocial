@@ -1,5 +1,5 @@
 # app/db/session.py
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
@@ -32,5 +32,17 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+    finally:
+        db.close()
+
+
+def db_ping() -> bool:
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        return True
+    except Exception as e:
+        print(f"Database ping failed: {e}")
+        return False
     finally:
         db.close()

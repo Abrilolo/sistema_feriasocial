@@ -37,7 +37,10 @@ def get_my_projects(
     for project in projects:
         taken_slots = (
             db.query(Registration)
-            .filter(Registration.project_id == project.id)
+            .filter(
+                Registration.project_id == project.id,
+                Registration.status != "CANCELLED"
+            )
             .count()
         )
 
@@ -62,6 +65,7 @@ def get_my_projects(
                 "remaining_slots": project.capacity - taken_slots,
                 "active_codes": active_codes,
                 "is_active": project.is_active,
+                "image_filename": project.image_filename,
             }
         )
 
@@ -142,6 +146,7 @@ def get_my_project_detail(
             "used_codes": used_codes,
             "expired_codes": expired_codes,
             "is_active": project.is_active,
+            "image_filename": project.image_filename,
         }
     }
 
@@ -175,6 +180,7 @@ def generate_temp_code(
     temp_code = TempCode(
         id=uuid.uuid4(),
         project_id=project.id,
+        created_by_user_id=current_user.id,
         code=code_value,
         expires_at=datetime.utcnow() + timedelta(minutes=expires_in_minutes),
         is_active=True,
@@ -218,7 +224,7 @@ def get_project_codes(
                 "id": code.id,
                 "code": code.code,
                 "is_active": code.is_active,
-                "is_used": code.is_used,
+                "is_used": code.used_at is not None,
                 "is_expired": code.expires_at < datetime.utcnow(),
                 "expires_at": code.expires_at,
             }
@@ -256,18 +262,16 @@ def get_project_students(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
-    registrations = (
-        db.query(Registration)
-        .join(Student)
+    records = (
+        db.query(Registration, Student)
+        .join(Student, Registration.student_id == Student.id)
         .filter(Registration.project_id == project_id)
         .all()
     )
 
     result = []
 
-    for reg in registrations:
-        student = reg.student_id
-
+    for reg, student in records:
         result.append(
             {
                 "matricula": student.matricula,
@@ -290,9 +294,9 @@ def export_project_students(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
-    registrations = (
-        db.query(Registration)
-        .join(Student)
+    records = (
+        db.query(Registration, Student)
+        .join(Student, Registration.student_id == Student.id)
         .filter(Registration.project_id == project_id)
         .all()
     )
@@ -302,8 +306,7 @@ def export_project_students(
 
     writer.writerow(["Matricula", "Correo", "Nombre"])
 
-    for reg in registrations:
-        student = reg.student
+    for reg, student in records:
         writer.writerow(
             [
                 student.matricula,

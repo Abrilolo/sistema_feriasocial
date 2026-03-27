@@ -42,3 +42,7 @@
   </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', path='js/public.js') }}?v=6"></script>
+{% endblock %}
