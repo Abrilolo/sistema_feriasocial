@@ -2,12 +2,81 @@ import { requestJSON } from './api.js';
 import { showMessage, hideMessage, safeShow, safeHide, formatDate, badgeLabel } from './ui.js';
 import { getAuthHeaders } from './auth.js';
 
+// Configuración premium para Chart.js
+const CHART_CONFIG = {
+  line: {
+    type: 'line',
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          padding: 12,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            title: () => '',
+            label: (context) => `${context.parsed.y} inscritos`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: {
+            font: { size: 10, family: 'Inter' },
+            color: '#64748b'
+          }
+        },
+        y: {
+          border: { display: false },
+          grid: {
+            color: 'rgba(148, 163, 184, 0.1)',
+            drawBorder: false
+          },
+          ticks: {
+            font: { size: 10, family: 'Inter' },
+            color: '#64748b',
+            padding: 8
+          },
+          min: 0
+        }
+      },
+      elements: {
+        line: {
+          tension: 0.4,
+          borderWidth: 3
+        },
+        point: {
+          radius: 0,
+          hitRadius: 20,
+          hoverRadius: 6,
+          hoverBorderWidth: 3
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      }
+    }
+  }
+};
+
 async function loadSocioProjects() {
   const container = document.getElementById("projectsContainer");
   if (!container) return;
 
   hideMessage("projectsError");
-  container.innerHTML = "<p>Cargando proyectos...</p>";
+  container.innerHTML = `
+    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
+    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
+    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
+  `;
 
   try {
     const data = await requestJSON("/socio/projects", {
@@ -19,7 +88,7 @@ async function loadSocioProjects() {
 
     const projects = data.projects || [];
 
-    // Pintar logo de organización permanentemente si al menos un proyecto lo tiene asociado
+    // Pintar logo de organización si al menos un proyecto lo tiene
     const projectWithImage = projects.find(p => p.image_filename);
     if (projectWithImage) {
       const orgLogoImg = document.getElementById("orgLogoImg");
@@ -27,127 +96,156 @@ async function loadSocioProjects() {
         const ts = new Date().getTime();
         orgLogoImg.src = `/static/img/img_socios/${projectWithImage.image_filename}?t=${ts}`;
         safeShow("orgLogoContainer", "flex");
+        document.getElementById("orgLogoContainer")?.classList.add("visible");
       }
     }
 
     if (projects.length === 0) {
-      container.innerHTML = "<p>No tienes proyectos asignados.</p>";
+      container.innerHTML = `
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: var(--space-12);">
+          <div style="font-size: 3rem; margin-bottom: var(--space-4);">📋</div>
+          <h3 style="color: var(--text);">No tienes proyectos asignados</h3>
+          <p style="color: var(--text-muted); margin-top: var(--space-2);">Contacta al administrador para asignarte proyectos.</p>
+        </div>
+      `;
       return;
     }
 
     container.innerHTML = projects
-      .map(
-        (project) => `
-          <div class="project-card modern-project-card" style="display: flex; flex-direction: column; gap: 15px; background: #ffffff; border-radius: 20px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-            <div class="mp-top" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
-              <div class="mp-info" style="flex: 1; min-width: 250px;">
-                <h3 style="margin: 0 0 5px 0; font-size: 20px; font-weight: 800; color: #0f172a;">${project.name}</h3>
-                <p style="margin: 0; font-size: 14px; color: #64748b;">${project.description || "Sin descripción"}</p>
-                
-                <div class="mp-stats-row" style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
-                  <!-- Capacidad -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #22c55e;">👥</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Capacidad:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.capacity}</strong>
+      .map((project) => {
+        const statusClass = project.is_active ? 'active' : 'inactive';
+        const statusText = project.is_active ? 'Activo' : 'Inactivo';
+
+        return `
+          <div class="modern-project-card" data-project-id="${project.id}">
+            <div class="mp-top">
+              <div class="mp-info">
+                <h3 class="mp-title">${project.name}</h3>
+                <p class="mp-description">${project.description || "Sin descripción disponible"}</p>
+
+                <div class="mp-stats-row">
+                  <div class="mp-stat-col">
+                    <span class="mp-stat-icon">👥</span>
+                    <span class="mp-stat-label">Capacidad</span>
+                    <strong class="mp-stat-value">${project.capacity}</strong>
                   </div>
-                  <!-- Ocupados -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #3b82f6;">👤</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Ocupados:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.taken_slots}</strong>
+                  <div class="mp-stat-col">
+                    <span class="mp-stat-icon">👤</span>
+                    <span class="mp-stat-label">Ocupados</span>
+                    <strong class="mp-stat-value">${project.taken_slots}</strong>
                   </div>
-                  <!-- Disponibles -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #eab308;">🪑</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Disponibles:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.remaining_slots}</strong>
+                  <div class="mp-stat-col">
+                    <span class="mp-stat-icon">🪑</span>
+                    <span class="mp-stat-label">Disponibles</span>
+                    <strong class="mp-stat-value">${project.remaining_slots}</strong>
                   </div>
-                  <!-- Códigos -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px; border-right: 1px solid #f1f5f9; padding-right: 15px;">
-                     <span style="font-size: 32px; color: #a855f7;">🔲</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Códigos activos:</span>
-                     <strong style="font-size: 28px; color: #0f172a;">${project.active_codes}</strong>
+                  <div class="mp-stat-col">
+                    <span class="mp-stat-icon">🔲</span>
+                    <span class="mp-stat-label">Códigos</span>
+                    <strong class="mp-stat-value">${project.active_codes}</strong>
                   </div>
-                  <!-- Estado -->
-                  <div class="mp-stat-col" style="display: flex; flex-direction: column; align-items: center; min-width: 100px;">
-                     <span style="font-size: 32px; color: #10b981;">✅</span>
-                     <span style="font-size: 13px; color: #475569; margin: 8px 0 2px 0;">Estado: <strong>${project.is_active ? 'Activo' : 'Inactivo'}</strong></span>
-                     <span style="background: ${project.is_active ? '#dcfce7' : '#fee2e2'}; color: ${project.is_active ? '#166534' : '#991b1b'}; padding: 4px 14px; border-radius: 99px; font-size: 12px; font-weight: 700; margin-top: 5px;">${project.is_active ? 'Activo' : 'Inactivo'}</span>
+                  <div class="mp-stat-col">
+                    <span class="mp-stat-icon">${project.is_active ? '✅' : '⏸️'}</span>
+                    <span class="mp-stat-label">Estado</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
                   </div>
                 </div>
               </div>
-              
-              <div class="mp-graph" style="width: 220px; height: 140px; display: flex; flex-direction: column;">
-                <span style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 5px;">Actividad Reciente</span>
-                <canvas id="miniChart-${project.id}" style="width: 100%; flex: 1;"></canvas>
+
+              <div class="mp-graph">
+                <span class="mp-graph-title">Inscripciones</span>
+                <canvas id="miniChart-${project.id}" class="mp-chart-canvas"></canvas>
               </div>
             </div>
 
-            <div class="mp-bottom" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: 10px;">
-              <button class="open-project-btn" data-project-id="${project.id}" style="background: #e2e8f0; color: #475569; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Ver detalles</button>
+            <div class="mp-bottom">
+              <button class="open-project-btn btn btn-secondary btn-sm" data-project-id="${project.id}">
+                Ver detalles
+              </button>
             </div>
           </div>
-        `
-      )
+        `;
+      })
       .join("");
 
-    // Initialize mini charts
+    // Initialize mini charts con configuración premium
     projects.forEach((project) => {
       const ctx = document.getElementById("miniChart-" + project.id);
       if (ctx && window.Chart) {
+        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.02)');
+
+        const maxSlots = Math.max(project.taken_slots, project.capacity, 10);
+
         new window.Chart(ctx, {
-          type: "line",
+          ...CHART_CONFIG.line,
           data: {
-            labels: ["1-Sep", "2-Sep", "3-Sep", "4-Sep", "5-Sep"],
+            labels: ["Lun", "Mar", "Mié", "Jue", "Vie"],
             datasets: [{
-              data: [0, Math.floor(project.taken_slots * 0.2), Math.floor(project.taken_slots * 0.5), Math.floor(project.taken_slots * 0.8), project.taken_slots],
+              data: [
+                Math.floor(project.taken_slots * 0.1),
+                Math.floor(project.taken_slots * 0.3),
+                Math.floor(project.taken_slots * 0.5),
+                Math.floor(project.taken_slots * 0.75),
+                project.taken_slots
+              ],
               borderColor: "#3b82f6",
-              backgroundColor: "rgba(59, 130, 246, 0.15)",
-              borderWidth: 3,
+              backgroundColor: gradient,
               fill: true,
-              tension: 0.4,
-              pointRadius: 0
+              borderWidth: 3
             }]
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            ...CHART_CONFIG.line.options,
             scales: {
-              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-              y: { border: { display: false }, grid: { display: false }, ticks: { display: false }, min: 0, max: Math.max(project.taken_slots, 10) }
+              ...CHART_CONFIG.line.options.scales,
+              y: {
+                ...CHART_CONFIG.line.options.scales.y,
+                max: maxSlots
+              }
             }
           }
         });
       }
     });
 
+    // Event listeners para botones
     document.querySelectorAll(".open-project-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const projectId = btn.dataset.projectId;
         const currentSelected = localStorage.getItem("selectedProjectId");
+        const detailPanel = document.getElementById("projectDetailPanel");
 
         // Toggle logic
-        const detailPanel = document.getElementById("projectDetailPanel");
         if (currentSelected === projectId && detailPanel && detailPanel.style.display !== "none") {
           safeHide("projectDetailPanel");
           safeHide("generateCodePanel");
           safeHide("studentsPanel");
           btn.textContent = "Ver detalles";
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-secondary");
           localStorage.setItem("selectedProjectId", "");
           return;
         }
 
         // Reset other buttons
-        document.querySelectorAll(".open-project-btn").forEach(b => b.textContent = "Ver detalles");
+        document.querySelectorAll(".open-project-btn").forEach(b => {
+          b.textContent = "Ver detalles";
+          b.classList.remove("btn-primary");
+          b.classList.add("btn-secondary");
+        });
+
         btn.textContent = "Ocultar detalles";
+        btn.classList.remove("btn-secondary");
+        btn.classList.add("btn-primary");
 
         localStorage.setItem("selectedProjectId", projectId);
         await loadSocioProjectDetail(projectId);
         await loadSocioStudents(projectId);
       });
     });
+
   } catch (error) {
     container.innerHTML = "";
     showMessage("projectsError", error.message);
@@ -170,25 +268,27 @@ async function loadSocioProjectDetail(projectId) {
     safeShow("generateCodePanel", "block");
     safeShow("studentsPanel", "block");
 
+    // Animar aparición
+    setTimeout(() => {
+      document.getElementById("projectDetailPanel")?.classList.add("animate-fade-up");
+    }, 50);
+
     const titleEl = document.getElementById("detailProjectName");
     if (titleEl) titleEl.textContent = project.name || "Proyecto";
 
     const descEl = document.getElementById("detailProjectDescription");
-    if (descEl) descEl.textContent = project.description || "Sin descripción";
+    if (descEl) descEl.textContent = project.description || "Sin descripción disponible";
 
     const capacity = project.capacity ?? 0;
-    const taken = project.taken_slots ?? project.taken_slots_query ?? 0;
+    const taken = project.taken_slots ?? 0;
     const available = project.remaining_slots ?? 0;
 
-    const statCap = document.getElementById("statCapacity");
-    if (statCap) statCap.textContent = capacity;
+    // Update stats con animación
+    animateValue("statCapacity", 0, capacity, 800);
+    animateValue("statTaken", 0, taken, 800);
+    animateValue("statRemaining", 0, available, 800);
 
-    const statTak = document.getElementById("statTaken");
-    if (statTak) statTak.textContent = taken;
-
-    const statRem = document.getElementById("statRemaining");
-    if (statRem) statRem.textContent = available;
-
+    // Update gauge
     const gaugeFill = document.getElementById("gaugeFill");
     const statTakenGauge = document.getElementById("statTakenGauge");
     const statCapacityGauge = document.getElementById("statCapacityGauge");
@@ -197,19 +297,68 @@ async function loadSocioProjectDetail(projectId) {
       let percentage = 0;
       if (capacity > 0) percentage = Math.min(taken / capacity, 1);
 
-      // Calculate SVG stroke offset for semi-circle
       const offset = 125.66 * (1 - percentage);
-      gaugeFill.style.strokeDashoffset = offset;
-      statTakenGauge.textContent = taken;
+
+      // Pequeña demora para la animación visual
+      setTimeout(() => {
+        gaugeFill.style.strokeDashoffset = offset;
+      }, 100);
+
+      // Animar el número
+      animateValue("statTakenGauge", 0, taken, 1000);
       statCapacityGauge.textContent = capacity;
+
+      // Cambiar color según ocupación
+      if (percentage >= 0.9) {
+        gaugeFill.style.stroke = '#f43f5e'; // Rojo - casi lleno
+      } else if (percentage >= 0.7) {
+        gaugeFill.style.stroke = '#f59e0b'; // Amarillo - medio lleno
+      } else {
+        gaugeFill.style.stroke = '#ffffff'; // Blanco - normal
+      }
     }
   } catch (error) {
     showMessage("detailError", error.message);
   }
 }
 
+// Helper para animar números
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+
+  const range = end - start;
+  const minTimer = 50;
+  let stepTime = Math.abs(Math.floor(duration / range));
+  stepTime = Math.max(stepTime, minTimer);
+
+  let startTime = new Date().getTime();
+  let endTime = startTime + duration;
+  let timer;
+
+  function run() {
+    let now = new Date().getTime();
+    let remaining = Math.max((endTime - now) / duration, 0);
+    let value = Math.round(end - (remaining * range));
+    obj.textContent = value;
+
+    if (value == end) {
+      clearInterval(timer);
+    }
+  }
+
+  timer = setInterval(run, stepTime);
+  run();
+}
+
 async function generateSocioCode(projectId) {
   hideMessage("generateCodeError");
+
+  const btn = document.getElementById("quickGenerateCodeBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="animate-spin">⏳</span> Generando...`;
+  }
 
   const expiresInMinutes = 10;
 
@@ -231,7 +380,10 @@ async function generateSocioCode(projectId) {
 
     safeShow("codeDisplayWrapper", "flex");
     const codeDisplay = document.getElementById("currentCodeDisplay");
-    if (codeDisplay) codeDisplay.textContent = code;
+    if (codeDisplay) {
+      codeDisplay.textContent = code;
+      codeDisplay.classList.add("animate-fade-up");
+    }
 
     const expiryDisplay = document.getElementById("codeExpiryDisplay");
     if (expiryDisplay) expiryDisplay.textContent = `Expira: ${expiresAt}`;
@@ -239,81 +391,11 @@ async function generateSocioCode(projectId) {
     await loadSocioProjectDetail(projectId);
   } catch (error) {
     showMessage("generateCodeError", error.message);
-  }
-}
-
-async function loadSocioCodes(projectId) {
-  const tbody = document.getElementById("codesTableBody");
-  if (!tbody) return;
-
-  hideMessage("codesError");
-  tbody.innerHTML = `<tr><td colspan="6">Cargando códigos...</td></tr>`;
-
-  try {
-    const data = await requestJSON(`/socio/projects/${projectId}/codes`, {
-      method: "GET",
-      headers: {
-        ...getAuthHeaders(),
-      },
-    });
-
-    const codes = data.codes || [];
-
-    if (codes.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6">No hay códigos para este proyecto.</td></tr>`;
-      return;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>✨</span> Crear Nuevo Código`;
     }
-
-    tbody.innerHTML = codes
-      .map(
-        (code) => `
-          <tr>
-            <td><strong>${code.code}</strong></td>
-            <td>${badgeLabel(code.is_active, "Sí", "No")}</td>
-            <td>${badgeLabel(code.is_used, "Sí", "No")}</td>
-            <td>${code.is_expired
-            ? '<span class="badge badge-warn">Sí</span>'
-            : '<span class="badge badge-ok">No</span>'
-          }</td>
-            <td>${formatDate(code.expires_at)}</td>
-            <td>
-              ${code.is_active && !code.is_used
-            ? `<button type="button" class="deactivate-code-btn" data-code-id="${code.id}">Desactivar</button>`
-            : "-"
-          }
-            </td>
-          </tr>
-        `
-      )
-      .join("");
-
-    document.querySelectorAll(".deactivate-code-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const codeId = btn.dataset.codeId;
-        await deactivateSocioCode(codeId, projectId);
-      });
-    });
-  } catch (error) {
-    tbody.innerHTML = "";
-    showMessage("codesError", error.message);
-  }
-}
-
-async function deactivateSocioCode(tempCodeId, projectId) {
-  hideMessage("codesError");
-
-  try {
-    await requestJSON(`/socio/temp-codes/${tempCodeId}/deactivate`, {
-      method: "PATCH",
-      headers: {
-        ...getAuthHeaders(),
-      },
-    });
-
-    await loadSocioProjectDetail(projectId);
-    await loadSocioCodes(projectId);
-  } catch (error) {
-    showMessage("codesError", error.message);
   }
 }
 
@@ -322,7 +404,13 @@ async function loadSocioStudents(projectId) {
   if (!tbody) return;
 
   hideMessage("studentsError");
-  tbody.innerHTML = `<tr><td colspan="5">Cargando estudiantes...</td></tr>`;
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align: center; padding: var(--space-8);">
+        <div class="skeleton" style="height: 20px; width: 80%; margin: 0 auto;"></div>
+      </td>
+    </tr>
+  `;
 
   try {
     const data = await requestJSON(`/socio/projects/${projectId}/students`, {
@@ -335,23 +423,35 @@ async function loadSocioStudents(projectId) {
     const students = data.students || [];
 
     if (students.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">No hay estudiantes registrados.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: var(--space-8);">
+            <div style="color: var(--text-muted);">
+              <div style="font-size: 2rem; margin-bottom: var(--space-3);">👥</div>
+              <p>No hay estudiantes registrados aún.</p>
+              <p style="font-size: var(--text-sm);">Genera un código para que los estudiantes se registren.</p>
+            </div>
+          </td>
+        </tr>
+      `;
       return;
     }
 
     tbody.innerHTML = students
-      .map(
-        (student) => `
+      .map((student) => {
+        const statusClass = student.status === 'registered' ? 'badge-ok' : 'badge-warn';
+        return `
           <tr>
-            <td>${student.matricula || "-"}</td>
+            <td><code>${student.matricula || "-"}</code></td>
             <td>${student.email || "-"}</td>
-            <td>${student.full_name || "-"}</td>
-            <td>${student.status || "-"}</td>
+            <td><strong>${student.full_name || "-"}</strong></td>
+            <td><span class="badge ${statusClass}">${student.status || "-"}</span></td>
             <td>${formatDate(student.registered_at)}</td>
           </tr>
-        `
-      )
+        `;
+      })
       .join("");
+
   } catch (error) {
     tbody.innerHTML = "";
     showMessage("studentsError", error.message);
@@ -363,6 +463,12 @@ function exportSocioStudents(projectId) {
   if (!token) {
     alert("No hay sesión activa.");
     return;
+  }
+
+  const btn = document.getElementById("exportStudentsBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `⏳ Exportando...`;
   }
 
   fetch(`/socio/projects/${projectId}/students/export`, {
@@ -386,25 +492,40 @@ function exportSocioStudents(projectId) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "estudiantes_proyecto.csv";
+      a.download = `estudiantes_proyecto_${projectId}_${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `⬇️ Exportar CSV`;
+      }
     })
     .catch((error) => {
       showMessage("studentsError", error.message);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `⬇️ Exportar CSV`;
+      }
     });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Siempre pedir los datos frescos al hacer refresh
+  // Cargar información del usuario
   requestJSON("/auth/me", { headers: getAuthHeaders() })
     .then(meData => {
       localStorage.setItem("user", JSON.stringify(meData));
       const orgNameSpan = document.getElementById("orgNameSpan");
       if (orgNameSpan && meData.organization_name) {
         orgNameSpan.textContent = meData.organization_name;
+      }
+
+      // Actualizar display de rol en header
+      const userRoleDisplay = document.getElementById("userRoleDisplay");
+      if (userRoleDisplay) {
+        userRoleDisplay.textContent = `Socio Formador • ${meData.organization_name || ''}`;
       }
     })
     .catch(() => {
@@ -417,6 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (e) { }
     });
 
+  // Event listeners
   const quickGenerateCodeBtn = document.getElementById("quickGenerateCodeBtn");
   const refreshDetailBtn = document.getElementById("refreshDetailBtn");
   const refreshStudentsBtn = document.getElementById("refreshStudentsBtn");
@@ -463,12 +585,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Cargar proyectos
   if (document.getElementById("projectsContainer")) {
     loadSocioProjects().then(async () => {
       const selectedProjectId = localStorage.getItem("selectedProjectId");
       if (selectedProjectId) {
         const btn = document.querySelector(`.open-project-btn[data-project-id="${selectedProjectId}"]`);
-        if (btn) btn.textContent = "Ocultar detalles";
+        if (btn) {
+          btn.textContent = "Ocultar detalles";
+          btn.classList.remove("btn-secondary");
+          btn.classList.add("btn-primary");
+        }
 
         await loadSocioProjectDetail(selectedProjectId);
         await loadSocioStudents(selectedProjectId);

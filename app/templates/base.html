@@ -4,34 +4,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Sistema Feria Social{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=9" />
+  <meta name="description" content="Sistema de gestión para la Feria de Servicio Social del Tecnológico de Monterrey - Conectando estudiantes con proyectos de impacto social" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <!-- Preconnect para fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <title>{% block title %}Sistema Feria Social{% endblock %} | Tec</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='img/logo-servicio-social.png') }}" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=10" />
+
+  {% block head %}{% endblock %}
 </head>
 
 <body>
   {% if request.url.path not in ["/acceso-estudiante", "/inscripcion-proyecto", "/catalogo-proyectos"] %}
-  <header class="topbar">
+  <header class="topbar" id="mainHeader">
     <div class="brand-wrap">
-      <img src="{{ url_for('static', path='img/logo-servicio-social.png') }}" alt="Servicio Social"
-        class="brand-logo" />
+      <a href="/" class="header-link">
+        <img src="{{ url_for('static', path='img/logo-servicio-social.png') }}" alt="Servicio Social Tec"
+          class="brand-logo" loading="lazy" />
+      </a>
       <div class="brand-texts">
         <span class="brand-title">Sistema Feria Social</span>
-        <span class="brand-subtitle">Gestión de registro y seguimiento</span>
+        <span class="brand-subtitle" id="userRoleDisplay">Gestión de registro y seguimiento</span>
       </div>
     </div>
 
-    <nav class="nav">
-      <a href="/login" id="navLogin">Login</a>
-      <a href="#" id="logoutBtn" class="nav-logout" style="display: none;">Salir</a>
+    <nav class="nav" id="mainNav">
+      <a href="/login" id="navLogin" class="nav-link">
+        <span>Iniciar Sesión</span>
+      </a>
+      <a href="#" id="logoutBtn" class="nav-logout" style="display: none;">
+        <span>Cerrar Sesión</span>
+      </a>
     </nav>
   </header>
   {% endif %}
 
-  <main class="container">
+  <main class="container" role="main">
     {% block content %}{% endblock %}
   </main>
 
-  <script type="module" src="{{ url_for('static', path='js/auth.js') }}?v=6"></script>
+  <!-- Toast Notifications Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script type="module" src="{{ url_for('static', path='js/auth.js') }}?v=7"></script>
   {% block scripts %}{% endblock %}
 </body>
 

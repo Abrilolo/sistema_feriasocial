@@ -4,90 +4,105 @@
 
 {% block content %}
 <section class="dashboard">
-  <div class="panel header-panel" style="background: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+  <!-- Header Panel -->
+  <div class="panel socio-header">
     <div class="header-info">
-      <h1 id="orgNameSpan" style="margin-bottom: 5px;">Panel de Socio</h1>
-      <p class="muted" style="margin-top: 8px;">Administra tus proyectos y visualiza el progreso de tus alumnos inscritos.</p>
+      <h1 id="orgNameSpan">Panel de Socio</h1>
+      <p class="header-description">Administra tus proyectos y visualiza el progreso de tus alumnos inscritos.</p>
     </div>
-    <div id="orgLogoContainer" style="display:none; align-items: center; justify-content: center;">
-      <img id="orgLogoImg" src="" alt="Logo" style="height: 120px; width: auto; max-width: 300px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));" />
+    <div id="orgLogoContainer" class="socio-logo-container">
+      <img id="orgLogoImg" src="" alt="Logo Organización" class="socio-logo" loading="lazy" />
     </div>
   </div>
 
+  <!-- Projects Container -->
   <div class="panel" id="projectsContainerPanel">
     <h2>Mis proyectos</h2>
     <div id="projectsError" class="error" style="display:none;"></div>
     <div id="projectsContainer" class="project-grid"></div>
   </div>
 
-  <div class="panel premium-card" id="projectDetailPanel" style="display:none; text-align: center; border-radius: 24px; padding: 40px 30px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; box-shadow: 0 15px 35px rgba(37, 99, 235, 0.25);">
-    
-    <div id="detailError" class="error" style="display:none; margin-bottom: 20px;"></div>
+  <!-- Project Detail Panel -->
+  <div class="panel project-detail-premium" id="projectDetailPanel" style="display:none;">
+    <div id="detailError" class="error" style="display:none; margin-bottom: var(--space-5);"></div>
 
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; text-align: left; flex-wrap: wrap; gap: 15px;">
+    <div class="project-detail-header">
       <div>
-        <h2 id="detailProjectName" style="font-size: 28px; margin-bottom: 8px; font-weight: 800; color: #ffffff;">Detalle del proyecto</h2>
-        <p class="muted" id="detailProjectDescription" style="font-size: 16px; margin-bottom: 0; color: rgba(255,255,255,0.85);"></p>
+        <h2 id="detailProjectName" class="project-detail-title">Detalle del proyecto</h2>
+        <p id="detailProjectDescription" class="project-detail-description"></p>
       </div>
-      <button id="refreshDetailBtn" type="button" class="btn-primary" style="background: #ffffff; padding: 10px 24px; font-size: 15px; border-radius: 99px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: none; color: #1d4ed8; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;">Actualizar Datos</button>
+      <div class="project-detail-actions">
+        <button id="refreshDetailBtn" type="button" class="btn-secondary">Actualizar Datos</button>
+      </div>
     </div>
 
-    <div class="gauge-container" style="position: relative; width: 360px; height: 180px; margin: 0 auto 20px auto;">
-        <svg viewBox="0 0 100 50" style="width: 100%; height: 100%; overflow: visible;">
-            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="10" stroke-linecap="round"/>
-            <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-dasharray="125.66" stroke-dashoffset="125.66" style="transition: stroke-dashoffset 1s ease-out;" />
-        </svg>
-        <div class="gauge-text" style="position: absolute; bottom: -20px; left: 0; right: 0; text-align: center;">
-            <div id="statTakenGauge" style="font-size: 64px; font-weight: 800; color: #ffffff; line-height: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.1);">0</div>
-            <div style="font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.95); margin-top: 8px;">Inscritos</div>
-            <div style="font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 4px;">de <span id="statCapacityGauge">0</span></div>
-        </div>
+    <!-- Gauge Visualization -->
+    <div class="gauge-container">
+      <svg viewBox="0 0 100 50" class="gauge-svg">
+        <path d="M 10 50 A 40 40 0 0 1 90 50" class="gauge-track" />
+        <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" class="gauge-fill" />
+      </svg>
+      <div class="gauge-text">
+        <div id="statTakenGauge" class="gauge-value">0</div>
+        <div class="gauge-label">Inscritos</div>
+        <div class="gauge-subtitle">de <span id="statCapacityGauge">0</span></div>
+      </div>
     </div>
 
-    <div class="inline-stats" style="display: flex; justify-content: center; gap: 30px; margin-top: 55px; flex-wrap: wrap; align-items: center; color: #ffffff; font-size: 17px; background: rgba(255,255,255,0.12); padding: 18px 30px; border-radius: 100px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); max-width: 720px; margin-left: auto; margin-right: auto; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px);">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 22px;">👥</span> Capacidad: <strong id="statCapacity" style="color: #ffffff; font-size: 19px;">0</strong>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 22px;">➡️</span> Ocupados: <strong id="statTaken" style="color: #ffffff; font-size: 19px;">0</strong>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); color: #ffffff; padding: 10px 24px; border-radius: 99px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <span style="font-size: 22px;">🪑</span> Disponibles: <strong id="statRemaining" style="color: #ffffff; font-size: 19px;">0</strong>
-        </div>
+    <!-- Stats Row -->
+    <div class="inline-stats">
+      <div class="stat-item">
+        <span class="stat-icon">👥</span>
+        <span class="stat-text">Capacidad: <strong id="statCapacity">0</strong></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">➡️</span>
+        <span class="stat-text">Ocupados: <strong id="statTaken">0</strong></span>
+      </div>
+      <div class="stat-item highlighted">
+        <span class="stat-icon">🪑</span>
+        <span class="stat-text">Disponibles: <strong id="statRemaining">0</strong></span>
+      </div>
     </div>
   </div>
 
+  <!-- Generate Code Panel -->
   <div class="panel generate-code-panel" id="generateCodePanel" style="display:none;">
     <div class="generate-code-wrapper">
       <div class="generate-code-left">
         <h2>Generar código de acceso</h2>
-        <p class="muted">Haz clic aquí para crear un nuevo código temporal (válido por 10 min).</p>
-        <button id="quickGenerateCodeBtn" class="btn-primary large-action-btn">✨ Crear Nuevo Código</button>
-        <div id="generateCodeError" class="error mt-2" style="display:none;"></div>
+        <p class="muted">Haz clic para crear un nuevo código temporal (válido por 10 minutos).</p>
+        <button id="quickGenerateCodeBtn" class="btn btn-primary btn-lg">
+          <span>✨</span> Crear Nuevo Código
+        </button>
+        <div id="generateCodeError" class="error" style="display:none;"></div>
       </div>
       <div class="generate-code-right" id="codeDisplayWrapper" style="display:none;">
-        <span class="code-subtitle">Código generado:</span>
+        <span class="code-subtitle">Código generado</span>
         <div class="code-box">
-          <h1 id="currentCodeDisplay">---</h1>
+          <h1 id="currentCodeDisplay" class="code-display">---</h1>
         </div>
         <p class="code-expiry" id="codeExpiryDisplay"></p>
       </div>
     </div>
   </div>
 
-
-  <div class="panel" id="studentsPanel" style="display:none;">
+  <!-- Students Panel -->
+  <div class="panel students-panel" id="studentsPanel" style="display:none;">
     <div class="panel-header">
-      <h2>Estudiantes registrados</h2>
-      <div class="actions-inline">
-        <button id="refreshStudentsBtn" type="button" class="btn-secondary">Actualizar lista</button>
-        <button id="exportStudentsBtn" type="button" class="btn-primary">⬇️ Exportar CSV</button>
+      <div>
+        <h2>Estudiantes registrados</h2>
+        <p class="panel-subtitle">Lista completa de estudiantes inscritos en este proyecto</p>
+      </div>
+      <div class="btn-group">
+        <button id="refreshStudentsBtn" type="button" class="btn btn-secondary btn-sm">Actualizar</button>
+        <button id="exportStudentsBtn" type="button" class="btn btn-success btn-sm">⬇️ Exportar CSV</button>
       </div>
     </div>
 
     <div id="studentsError" class="error" style="display:none;"></div>
-    <div class="table-wrapper elegant-table">
-      <table>
+    <div class="table-wrapper">
+      <table class="elegant-table">
         <thead>
           <tr>
             <th>Matrícula</th>
@@ -105,7 +120,6 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Añadir Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="{{ url_for('static', path='js/socio.js') }}?v=5"></script>
+<script type="module" src="{{ url_for('static', path='js/socio.js') }}?v=6"></script>
 {% endblock %}
