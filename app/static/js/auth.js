@@ -1,21 +1,36 @@
 import { requestJSON } from './api.js';
-import { showMessage, hideMessage } from './ui.js';
+import { showMessage, hideMessage, toastSuccess, toastError } from './ui.js';
 
 export function saveSession(token, user) {
   localStorage.setItem("token", token);
   localStorage.setItem("user", JSON.stringify(user));
   localStorage.setItem("role", user.role || "");
-  document.cookie = `access_token=Bearer ${token}; path=/; SameSite=Lax`;
+  // Cookie ahora se configura desde el servidor con HttpOnly
+  // Solo mantenemos la cookie de fallback para compatibilidad
+  // SameSite=Lax protege contra CSRF básico
+  const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `access_token=Bearer ${token}; path=/; SameSite=Lax${secureFlag}`;
 }
 
-export function clearSession() {
+export async function clearSession() {
+  // Intentar logout en backend para limpiar cookie HttpOnly
+  try {
+    await fetch("/auth/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+  } catch (e) {
+    // Silenciar error si el backend no responde
+  }
+
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("role");
   localStorage.removeItem("selectedProjectId");
 
+  const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
   document.cookie =
-    "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+    `access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secureFlag}`;
 }
 
 export function redirectByRole(role) {
@@ -68,12 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("username", email);
         formData.append("password", password);
 
-        const loginData = await requestJSON("/auth/login", {
+        // Usar login-cookie para cookie HttpOnly segura
+        const loginData = await requestJSON("/auth/login-cookie", {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
           body: formData.toString(),
+          credentials: "same-origin" // Importante para enviar/recibir cookies
         });
 
         const token = loginData.access_token;
@@ -81,7 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
           throw new Error("El backend no devolvió access_token.");
         }
 
-        const meData = await requestJSON("/auth/me", {
+        // El endpoint login-cookie ya devuelve los datos del usuario
+        const meData = loginData.user || await requestJSON("/auth/me", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -98,9 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
+    logoutBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      clearSession();
+      await clearSession();
       window.location.href = "/login";
     });
   }

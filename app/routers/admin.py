@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
@@ -449,11 +450,11 @@ def create_student_admin(
             db.add(checkin)
             db.commit()
             
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"No se pudo crear el estudiante. {str(e)}",
+            detail="No se pudo crear el estudiante. Por favor, intente más tarde.",
         )
 
     return {
@@ -527,7 +528,7 @@ def list_all_students(
 
 @router.patch("/registrations/{registration_id}/cancel")
 def cancel_registration(
-    registration_id: str,
+    registration_id: uuid.UUID,
     db: Session = Depends(get_db),
     _=Depends(require_role("ADMIN")),
 ):
@@ -616,7 +617,7 @@ def cancel_registration(
 
 @router.patch("/projects/{project_id}")
 def update_project(
-    project_id: str,
+    project_id: uuid.UUID,
     payload: AdminProjectUpdateIn,
     db: Session = Depends(get_db),
     _=Depends(require_role("ADMIN")),
@@ -638,18 +639,18 @@ def update_project(
     try:
         db.commit()
         db.refresh(project)
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar el proyecto: {str(e)}",
+            detail="Error al actualizar el proyecto. Por favor, intente más tarde.",
         )
 
     return {"ok": True, "message": "Proyecto actualizado correctamente."}
 
 @router.patch("/projects/{project_id}/deactivate")
 def deactivate_project(
-    project_id: str,
+    project_id: uuid.UUID,
     db: Session = Depends(get_db),
     _=Depends(require_role("ADMIN")),
 ):
@@ -697,7 +698,7 @@ def deactivate_project(
 
 @router.patch("/projects/{project_id}/activate")
 def activate_project(
-    project_id: str,
+    project_id: uuid.UUID,
     db: Session = Depends(get_db),
     _=Depends(require_role("ADMIN")),
 ):

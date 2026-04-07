@@ -1,4 +1,4 @@
-import { requestJSON } from './api.js';
+import { requestJSON, escapeHtml } from './api.js';
 import { showMessage, hideMessage, safeShow, safeHide, formatDate, badgeLabel } from './ui.js';
 import { getAuthHeaders } from './auth.js';
 
@@ -116,33 +116,41 @@ async function loadSocioProjects() {
         const statusClass = project.is_active ? 'active' : 'inactive';
         const statusText = project.is_active ? 'Activo' : 'Inactivo';
 
+        // Escapar datos dinámicos para prevenir XSS
+        const safeName = escapeHtml(project.name);
+        const safeDesc = escapeHtml(project.description || "Sin descripción disponible");
+        const safeCapacity = escapeHtml(project.capacity);
+        const safeTaken = escapeHtml(project.taken_slots);
+        const safeRemaining = escapeHtml(project.remaining_slots);
+        const safeActiveCodes = escapeHtml(project.active_codes);
+
         return `
           <div class="modern-project-card" data-project-id="${project.id}">
             <div class="mp-top">
               <div class="mp-info">
-                <h3 class="mp-title">${project.name}</h3>
-                <p class="mp-description">${project.description || "Sin descripción disponible"}</p>
+                <h3 class="mp-title">${safeName}</h3>
+                <p class="mp-description">${safeDesc}</p>
 
                 <div class="mp-stats-row">
                   <div class="mp-stat-col">
                     <span class="mp-stat-icon">👥</span>
                     <span class="mp-stat-label">Capacidad</span>
-                    <strong class="mp-stat-value">${project.capacity}</strong>
+                    <strong class="mp-stat-value">${safeCapacity}</strong>
                   </div>
                   <div class="mp-stat-col">
                     <span class="mp-stat-icon">👤</span>
                     <span class="mp-stat-label">Ocupados</span>
-                    <strong class="mp-stat-value">${project.taken_slots}</strong>
+                    <strong class="mp-stat-value">${safeTaken}</strong>
                   </div>
                   <div class="mp-stat-col">
                     <span class="mp-stat-icon">🪑</span>
                     <span class="mp-stat-label">Disponibles</span>
-                    <strong class="mp-stat-value">${project.remaining_slots}</strong>
+                    <strong class="mp-stat-value">${safeRemaining}</strong>
                   </div>
                   <div class="mp-stat-col">
                     <span class="mp-stat-icon">🔲</span>
                     <span class="mp-stat-label">Códigos</span>
-                    <strong class="mp-stat-value">${project.active_codes}</strong>
+                    <strong class="mp-stat-value">${safeActiveCodes}</strong>
                   </div>
                   <div class="mp-stat-col">
                     <span class="mp-stat-icon">${project.is_active ? '✅' : '⏸️'}</span>
@@ -440,12 +448,17 @@ async function loadSocioStudents(projectId) {
     tbody.innerHTML = students
       .map((student) => {
         const statusClass = student.status === 'registered' ? 'badge-ok' : 'badge-warn';
+        // Escapar datos del estudiante para prevenir XSS
+        const safeMatricula = escapeHtml(student.matricula || "-");
+        const safeEmail = escapeHtml(student.email || "-");
+        const safeName = escapeHtml(student.full_name || "-");
+        const safeStatus = escapeHtml(student.status || "-");
         return `
           <tr>
-            <td><code>${student.matricula || "-"}</code></td>
-            <td>${student.email || "-"}</td>
-            <td><strong>${student.full_name || "-"}</strong></td>
-            <td><span class="badge ${statusClass}">${student.status || "-"}</span></td>
+            <td><code>${safeMatricula}</code></td>
+            <td>${safeEmail}</td>
+            <td><strong>${safeName}</strong></td>
+            <td><span class="badge ${statusClass}">${safeStatus}</span></td>
             <td>${formatDate(student.registered_at)}</td>
           </tr>
         `;

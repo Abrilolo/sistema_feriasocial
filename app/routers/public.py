@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.core.limiter import limiter
 from app.models.student import Student
 from app.models.checkin import Checkin
 from app.models.temp_code import TempCode
@@ -34,7 +35,9 @@ def public_ping():
 
 
 @router.post("/register", status_code=201)
+@limiter.limit("5/minute")
 def register_project(
+    request: Request,
     payload: RegisterProjectRequest,
     db: Session = Depends(get_db),
 ):
@@ -169,7 +172,9 @@ def register_project(
     }
 
 @router.post("/generate-qr")
+@limiter.limit("5/minute")
 def generate_qr_token(
+    request: Request,
     payload: GenerateQRRequest,
     db: Session = Depends(get_db),
 ):

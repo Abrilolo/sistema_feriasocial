@@ -1,4 +1,4 @@
-import { requestJSON } from './api.js';
+import { requestJSON, escapeHtml } from './api.js';
 import { showMessage, hideMessage, badgeLabel } from './ui.js';
 import { getAuthHeaders } from './auth.js';
 
@@ -26,7 +26,7 @@ async function loadAdminMetrics() {
 
     data.project_occupancy.forEach(p => {
       const tr = document.createElement("tr");
-      
+
       const pct = p.occupancy_percent;
       let barColor = pct >= 100 ? "var(--error)" : "var(--primary)";
       const barHtml = `
@@ -35,13 +35,19 @@ async function loadAdminMetrics() {
         </div>
       `;
 
+      // Escapar datos para prevenir XSS
+      const safeName = escapeHtml(p.name);
+      const safeTaken = escapeHtml(p.taken_slots);
+      const safeCapacity = escapeHtml(p.capacity);
+      const safePct = escapeHtml(pct);
+
       tr.innerHTML = `
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">
-          <strong>${p.name}</strong>
+          <strong>${safeName}</strong>
           ${!p.is_active ? badgeLabel("Inactivo", "muted") : ""}
         </td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border);">${p.taken_slots} / ${p.capacity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid var(--border);">${pct}% ${barHtml}</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safeTaken} / ${safeCapacity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safePct}% ${barHtml}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <button class="btn-toggle-project" data-id="${p.project_id}" data-action="${p.is_active ? 'deactivate' : 'activate'}" style="padding: 5px 10px; border-radius: 4px; border: none; cursor:pointer; background: ${p.is_active ? '#fee2e2' : '#dcfce7'}; color: ${p.is_active ? '#b91c1c' : '#15803d'}; font-weight: 500;">
@@ -102,6 +108,11 @@ function renderStudentsTable(studentsList) {
   studentsList.forEach(s => {
     const tr = document.createElement("tr");
 
+    // Escapar datos del estudiante para prevenir XSS
+    const safeMatricula = escapeHtml(s.matricula);
+    const safeEmail = escapeHtml(s.email);
+    const safeProjectName = s.project ? escapeHtml(s.project.name) : null;
+
     let statusHtml = s.has_checkin ? badgeLabel("Check-In", "success") : badgeLabel("Sin Check-In", "muted");
     if (s.is_registered) {
       statusHtml += " " + badgeLabel("Registrado", "primary");
@@ -114,11 +125,11 @@ function renderStudentsTable(studentsList) {
 
     tr.innerHTML = `
       <td style="padding: 10px; border-bottom: 1px solid var(--border);">
-        <strong>${s.matricula}</strong><br><small class="muted">${s.email}</small>
+        <strong>${safeMatricula}</strong><br><small class="muted">${safeEmail}</small>
       </td>
       <td style="padding: 10px; border-bottom: 1px solid var(--border);">${statusHtml}</td>
       <td style="padding: 10px; border-bottom: 1px solid var(--border); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        ${s.project ? s.project.name : '<span class="muted">-</span>'}
+        ${safeProjectName ? safeProjectName : '<span class="muted">-</span>'}
       </td>
       <td style="padding: 10px; border-bottom: 1px solid var(--border);">${actionHtml}</td>
     `;

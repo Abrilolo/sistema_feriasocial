@@ -3,8 +3,9 @@ export function showMessage(elementId, message, type = "error") {
   if (!el) return;
 
   el.style.display = "block";
-  el.textContent =
-    typeof message === "string" ? message : JSON.stringify(message, null, 2);
+  // Usar textContent para evitar XSS (no interpreta HTML)
+  const text = typeof message === "string" ? message : JSON.stringify(message, null, 2);
+  el.textContent = text;
 
   el.className = type === "success" ? "success" : "error";
 }
@@ -65,6 +66,14 @@ function getToastContainer() {
   return toastContainer;
 }
 
+// Función auxiliar para crear elementos con textContent seguro
+function createSafeTextElement(text, cssText = "") {
+  const el = document.createElement("span");
+  if (cssText) el.style.cssText = cssText;
+  el.textContent = text;
+  return el;
+}
+
 export function toast(message, type = "info", duration = 4000) {
   const container = getToastContainer();
 
@@ -88,8 +97,19 @@ export function toast(message, type = "info", duration = 4000) {
     max-width: 380px;
   `;
 
-  const icon = type === "success" ? "✓" : type === "error" ? "✕" : type === "warning" ? "⚠" : "ℹ";
-  toast.innerHTML = `<span style="font-size: 18px; line-height: 1;">${icon}</span><span>${message}</span>`;
+  // Usar textContent y crear elementos de forma segura para evitar XSS
+  const iconChar = type === "success" ? "✓" : type === "error" ? "✕" : type === "warning" ? "⚠" : "ℹ";
+  
+  const iconSpan = document.createElement("span");
+  iconSpan.style.fontSize = "18px";
+  iconSpan.style.lineHeight = "1";
+  iconSpan.textContent = iconChar;
+  
+  const messageSpan = document.createElement("span");
+  messageSpan.textContent = message;
+  
+  toast.appendChild(iconSpan);
+  toast.appendChild(messageSpan);
 
   container.appendChild(toast);
 
@@ -159,26 +179,48 @@ export function showModal(options = {}) {
     animation: modalSlideUp 0.3s ease;
   `;
 
-  let html = "";
+  // Construir modal de forma segura usando DOM API en lugar de innerHTML
+  modal.innerHTML = ""; // Limpiar contenido previo
+
   if (title) {
-    html += `<h2 style="margin: 0 0 12px 0; font-size: 22px; color: #0f172a;">${title}</h2>`;
-  }
-  if (content) {
-    html += `<div style="color: #475569; line-height: 1.6;">${content}</div>`;
-  }
-  if (actions.length > 0) {
-    html += `<div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">`;
-    actions.forEach(action => {
-      html += `<button class="modal-action" data-action="${action.id || ""}" style="padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; background: ${action.primary ? 'linear-gradient(135deg, #2563eb, #3b82f6)' : '#e2e8f0'}; color: ${action.primary ? 'white' : '#1e293b'};">${action.label}</button>`;
-    });
-    html += `</div>`;
+    const titleEl = document.createElement("h2");
+    titleEl.style.cssText = "margin: 0 0 12px 0; font-size: 22px; color: #0f172a;";
+    titleEl.textContent = title;
+    modal.appendChild(titleEl);
   }
 
-  modal.innerHTML = html;
+  if (content) {
+    const contentEl = document.createElement("div");
+    contentEl.style.cssText = "color: #475569; line-height: 1.6;";
+    // Si el contenido es HTML confiable (como botones internos), se puede usar innerHTML
+    // Pero si viene de inputs de usuario, debería ser sanitizado.
+    // Para simplificar y dar seguridad, si es string plana usamos textContent.
+    if (typeof content === 'string' && !content.includes('<')) {
+        contentEl.textContent = content;
+    } else {
+        contentEl.innerHTML = content;
+    }
+    modal.appendChild(contentEl);
+  }
+
+  if (actions.length > 0) {
+    const actionsEl = document.createElement("div");
+    actionsEl.style.cssText = "display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;";
+    
+    actions.forEach(action => {
+      const btn = document.createElement("button");
+      btn.className = "modal-action";
+      btn.dataset.action = action.id || "";
+      btn.textContent = action.label;
+      btn.style.cssText = `padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; border: none; background: ${action.primary ? 'linear-gradient(135deg, #2563eb, #3b82f6)' : '#e2e8f0'}; color: ${action.primary ? 'white' : '#1e293b'};`;
+      actionsEl.appendChild(btn);
+    });
+    modal.appendChild(actionsEl);
+  }
 
   if (showClose) {
     const closeBtn = document.createElement("button");
-    closeBtn.innerHTML = "✕";
+    closeBtn.textContent = "✕";
     closeBtn.style.cssText = `
       position: absolute;
       top: 16px;
@@ -207,15 +249,17 @@ export function showModal(options = {}) {
     }
   };
 
-  modal.querySelectorAll(".modal-action").forEach(btn => {
-    btn.onclick = () => {
+  // Agregar event listeners a los botones de acción
+  const actionButtons = modal.querySelectorAll(".modal-action");
+  actionButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
       const actionId = btn.dataset.action;
       const action = actions.find(a => a.id === actionId);
       if (action && action.onClick) {
         action.onClick();
       }
       closeModal(overlay, onClose);
-    };
+    });
   });
 
   return overlay;

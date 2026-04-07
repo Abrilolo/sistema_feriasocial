@@ -1,5 +1,6 @@
 # app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -17,6 +18,16 @@ class Settings(BaseSettings):
         env_file=".env",
         extra="ignore",
     )
+
+    @field_validator("JWT_SECRET")
+    @classmethod
+    def validate_jwt_secret(cls, v: str) -> str:
+        if len(v) < 32:
+            raise ValueError(
+                "JWT_SECRET debe tener al menos 32 caracteres para seguridad adecuada. "
+                f"Longitud actual: {len(v)} caracteres."
+            )
+        return v
 
 
 settings = Settings()

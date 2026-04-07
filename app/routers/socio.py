@@ -4,12 +4,13 @@ import uuid
 import csv
 from io import StringIO
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.deps import require_roles, get_current_user
+from app.core.limiter import limiter
 from app.models.project import Project
 from app.models.temp_code import TempCode
 from app.models.registration import Registration
@@ -155,7 +156,9 @@ def get_my_project_detail(
 # GENERAR CODIGO TEMPORAL
 # -----------------------------
 @router.post("/temp-codes")
+@limiter.limit("5/minute")
 def generate_temp_code(
+    request: Request,
     payload: dict,
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
@@ -209,6 +212,15 @@ def get_project_codes(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
+    # Validar que el proyecto pertenezca al usuario actual (protección IDOR)
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        Project.owner_user_id == current_user.id
+    ).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
     codes = (
         db.query(TempCode)
         .filter(TempCode.project_id == project_id)
@@ -242,9 +254,19 @@ def deactivate_temp_code(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
+    # Verificar propiedad del código temporal a través del proyecto
     code = db.query(TempCode).filter(TempCode.id == temp_code_id).first()
 
     if not code:
+        raise HTTPException(status_code=404, detail="Código no encontrado")
+
+    # Validar que el código pertenezca a un proyecto del usuario actual (protección IDOR)
+    project = db.query(Project).filter(
+        Project.id == code.project_id,
+        Project.owner_user_id == current_user.id
+    ).first()
+
+    if not project:
         raise HTTPException(status_code=404, detail="Código no encontrado")
 
     code.is_active = False
@@ -262,6 +284,15 @@ def get_project_students(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
+    # Validar que el proyecto pertenezca al usuario actual (protección IDOR)
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        Project.owner_user_id == current_user.id
+    ).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
     records = (
         db.query(Registration, Student)
         .join(Student, Registration.student_id == Student.id)
@@ -294,6 +325,15 @@ def export_project_students(
     db: Session = Depends(get_db),
     current_user=Depends(require_roles("SOCIO")),
 ):
+    # Validar que el proyecto pertenezca al usuario actual (protección IDOR)
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        Project.owner_user_id == current_user.id
+    ).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
     records = (
         db.query(Registration, Student)
         .join(Student, Registration.student_id == Student.id)
