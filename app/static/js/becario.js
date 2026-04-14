@@ -55,14 +55,30 @@ async function performCheckin(qrToken) {
 }
 
 function startScanner() {
+    const btnStart = document.getElementById("btnStartCamera");
+    const msgEl = document.getElementById("scannerMessage");
+
+    if (btnStart) btnStart.setAttribute("disabled", "true");
+    if (msgEl) {
+        msgEl.style.display = "none";
+        msgEl.textContent = "";
+    }
+
     html5QrCode = new Html5Qrcode("reader");
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
     
     html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
+    .then(() => {
+        if (btnStart) btnStart.parentElement.style.display = "none";
+    })
     .catch(err => {
         console.error("Unable to start scanner", err);
-        document.getElementById("scannerMessage").textContent = "Error al iniciar cámara: " + err;
-        document.getElementById("scannerMessage").style.display = "block";
+        if (btnStart) btnStart.removeAttribute("disabled");
+        const errorMessage = document.getElementById("scannerMessage");
+        errorMessage.textContent = "Error al iniciar cámara: " + err;
+        errorMessage.style.background = "#fee2e2";
+        errorMessage.style.color = "#b91c1c";
+        errorMessage.style.display = "block";
     });
 }
 
@@ -75,12 +91,17 @@ function stopScanner() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    startScanner();
+    const btnStart = document.getElementById("btnStartCamera");
+    if (btnStart) {
+        btnStart.addEventListener("click", startScanner);
+    }
 
     document.getElementById("btnRestartScanner").addEventListener("click", () => {
         document.getElementById("btnRestartScanner").style.display = "none";
         document.getElementById("scannerMessage").style.display = "none";
         document.getElementById("scannedInfo").style.display = "none";
+        const cameraControls = document.getElementById("cameraControls");
+        if (cameraControls) cameraControls.style.display = "block";
         startScanner();
     });
 });

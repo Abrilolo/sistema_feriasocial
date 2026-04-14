@@ -8,7 +8,9 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from app.core.limiter import limiter
+from app.core.config import settings
 
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
@@ -42,24 +44,36 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 # Configuración de CORS - Dominios permitidos
-ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://localhost:3000",
-]
+# En producción, solo se permite el dominio oficial configurado en FRONTEND_URL
+is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
 
-# Añadir dominio de producción desde variable de entorno si existe
-production_origin = os.getenv("FRONTEND_URL")
-if production_origin:
-    ALLOWED_ORIGINS.append(production_origin)
+if is_production:
+    # En producción: solo permitir el dominio configurado explícitamente
+    ALLOWED_ORIGINS = []
+    production_origin = os.getenv("FRONTEND_URL")
+    if production_origin:
+        ALLOWED_ORIGINS.append(production_origin)
 
-# Añadir dominios adicionales desde variable de entorno (comma-separated)
-additional_origins = os.getenv("ADDITIONAL_ALLOWED_ORIGINS", "")
-if additional_origins:
-    for origin in additional_origins.split(","):
-        origin = origin.strip()
-        if origin and origin not in ALLOWED_ORIGINS:
-            ALLOWED_ORIGINS.append(origin)
+    # Añadir dominios adicionales si están configurados
+    additional_origins = os.getenv("ADDITIONAL_ALLOWED_ORIGINS", "")
+    if additional_origins:
+        for origin in additional_origins.split(","):
+            origin = origin.strip()
+            if origin and origin not in ALLOWED_ORIGINS:
+                ALLOWED_ORIGINS.append(origin)
+
+    # Si no hay orígenes configurados, rechitar todas las peticiones CORS
+    if not ALLOWED_ORIGINS:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning("PRODUCCIÓN: No se ha configurado FRONTEND_URL. Las peticiones CORS serán rechazadas.")
+else:
+    # En desarrollo: permitir localhost
+    ALLOWED_ORIGINS = [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -74,10 +88,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
 
-        # Content Security Policy - estricto, no inline scripts
+        # Content Security Policy - actualizado para permitir librerías externas y scripts inline necesarios
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
@@ -99,12 +113,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Referrer Policy
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-        # Permissions Policy
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        # Permissions Policy - permite cámara en el mismo origen
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(self)"
 
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SessionMiddleware, secret_key=settings.JWT_SECRET)
 
 # Archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

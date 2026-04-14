@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     JWT_ALG: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # Google OAuth
+    GOOGLE_CLIENT_ID: str | None = None
+    GOOGLE_CLIENT_SECRET: str | None = None
+    STUDENT_EMAIL_DOMAIN: str = "tec.mx"
+    ENVIRONMENT: str = "development"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

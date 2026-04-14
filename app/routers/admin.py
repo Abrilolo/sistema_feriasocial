@@ -1,8 +1,9 @@
 from datetime import datetime
 import uuid
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 
 from app.core.security import require_role, hash_password
@@ -27,8 +28,29 @@ class AdminStudentCreateIn(BaseModel):
 
 class AdminUserCreateIn(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=6, max_length=72)
+    password: str = Field(min_length=8, max_length=72)
     role: str
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """
+        Valida que la contraseña cumpla con requisitos de seguridad:
+        - Mínimo 8 caracteres (ya validado por Field)
+        - Al menos una letra mayúscula
+        - Al menos una letra minúscula
+        - Al menos un número
+        - Al menos un carácter especial
+        """
+        if not re.search(r'[A-Z]', v):
+            raise ValueError("La contraseña debe contener al menos una letra mayúscula")
+        if not re.search(r'[a-z]', v):
+            raise ValueError("La contraseña debe contener al menos una letra minúscula")
+        if not re.search(r'\d', v):
+            raise ValueError("La contraseña debe contener al menos un número")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>_\-=+\[\]\\\/]', v):
+            raise ValueError("La contraseña debe contener al menos un carácter especial (!@#$%^&*(),.?\":{}|<>_-=+[]\\/)")
+        return v
 
 
 class AdminProjectCreateIn(BaseModel):

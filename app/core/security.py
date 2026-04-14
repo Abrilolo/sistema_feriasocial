@@ -4,13 +4,14 @@ from typing import Optional
 
 import bcrypt
 from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.user import User
+from app.models.student import Student
 
 # Swagger detecta esto y crea el botón Authorize si hay endpoints que lo dependan
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -97,3 +98,30 @@ def require_role(required_role: str):
             )
         return user
     return _checker
+
+
+def get_current_student(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> Student:
+    """
+    Identifica al estudiante usando la cookie 'student_token' creada por el flujo de Google.
+    """
+    token = request.cookies.get("student_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Sesión de estudiante no encontrada. Inicia sesión con Google."
+        )
+
+    payload = decode_access_token(token)
+    student_id = payload.get("sub")
+
+    if not student_id or payload.get("type") != "student":
+        raise HTTPException(status_code=401, detail="Token de estudiante inválido")
+
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=401, detail="Estudiante no encontrado en la base de datos")
+
+    return student

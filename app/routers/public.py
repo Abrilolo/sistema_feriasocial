@@ -12,20 +12,17 @@ from app.models.temp_code import TempCode
 from app.models.project import Project
 from app.models.user import User
 from app.models.registration import Registration
+from app.core.security import get_current_student
 
 router = APIRouter(prefix="/public", tags=["public"])
 
 
 class RegisterProjectRequest(BaseModel):
-    matricula: str
-    email: str
     temp_code: str | None = None
     codigo: str | None = None
 
 
 class GenerateQRRequest(BaseModel):
-    matricula: str
-    email: str
     career: str | None = None
 
 
@@ -40,25 +37,11 @@ def register_project(
     request: Request,
     payload: RegisterProjectRequest,
     db: Session = Depends(get_db),
+    student: Student = Depends(get_current_student),
 ):
-    matricula = payload.matricula.strip().upper()
-    email = payload.email.strip().lower()
     temp_code_value = (payload.temp_code or payload.codigo or "").strip().upper()
 
-    # 1) Buscar estudiante
-    student = db.query(Student).filter(Student.matricula == matricula).first()
-    if not student:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Estudiante no encontrado.",
-        )
-
-    # 2) Validar correo
-    if student.email.lower() != email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo no coincide con la matrícula registrada.",
-        )
+    # Ya no buscamos al estudiante por matrícula, usamos el de la sesión
 
     # 3) Verificar check-in
     checkin = db.query(Checkin).filter(Checkin.student_id == student.id).first()
@@ -177,27 +160,12 @@ def generate_qr_token(
     request: Request,
     payload: GenerateQRRequest,
     db: Session = Depends(get_db),
+    student: Student = Depends(get_current_student),
 ):
     from app.core.security import create_access_token
     from datetime import timedelta
 
-    matricula = payload.matricula.strip().upper()
-    email = payload.email.strip().lower()
-
-    # 1) Buscar estudiante
-    student = db.query(Student).filter(Student.matricula == matricula).first()
-    if not student:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Estudiante no encontrado.",
-        )
-
-    # 2) Validar correo
-    if student.email.lower() != email:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo no coincide con la matrícula registrada.",
-        )
+    # ACTUALIZACIÓN: Guardar carrera si viene en el payload
 
     # ACTUALIZACIÓN: Guardar carrera si viene en el payload
     if payload.career:

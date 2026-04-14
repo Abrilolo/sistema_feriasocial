@@ -10,8 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
       hideMessage("registroError");
       hideMessage("registroSuccess");
 
-      const matricula = document.getElementById("matricula").value.trim();
-      const email = document.getElementById("registroEmail").value.trim();
       const codigo = document.getElementById("codigo").value.trim();
 
       try {
@@ -20,14 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ matricula, email, temp_code: codigo }),
+          body: JSON.stringify({ temp_code: codigo }),
         });
 
         showMessage(
           "registroSuccess",
-          JSON.stringify(data, null, 2),
+          "¡Registro exitoso! Ya estás inscrito en el proyecto.",
           "success"
         );
+        // Opcional: Redirigir después de 2 segundos
+        // setTimeout(() => window.location.href = "/acceso-estudiante", 2000);
       } catch (error) {
         showMessage("registroError", error.message);
       }
