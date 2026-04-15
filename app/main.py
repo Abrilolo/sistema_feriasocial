@@ -26,10 +26,16 @@ from app.db.session import db_ping
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Detectar entorno
+is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+
 app = FastAPI(
     title="Feria Servicio Social Tec",
     description="Sistema de gestión para la feria de servicio social",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
 
 # Attach rate limiter to state
@@ -142,10 +148,10 @@ async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
         content={"detail": "Error interno en la base de datos. Por favor, intente más tarde."},
     )
 
-# Ruta base de salud
+# Ruta base de salud - no revelar estado interno de la BD
 @app.get("/health")
 def health():
-    return {"status": "healthy", "db": db_ping()}
+    return {"status": "ok"}
 
 # Inclusión de routers
 app.include_router(views.router)

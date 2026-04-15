@@ -1,8 +1,11 @@
 # app/db/session.py
+import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def _pick_database_url() -> str:
@@ -21,7 +24,11 @@ if "supabase.co" in DATABASE_URL and "sslmode=" not in DATABASE_URL:
 
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
+    pool_pre_ping=True,      # Verifica que la conexión esté viva antes de usar
+    pool_size=20,            # Conexiones base en el pool (soporta alta concurrencia)
+    max_overflow=30,         # Conexiones adicionales bajo demanda (picos de 500 alumnos)
+    pool_timeout=30,         # Segundos máx de espera por conexión disponible
+    pool_recycle=1800,       # Reciclar conexiones cada 30 min (evita timeouts de Supabase)
     connect_args=connect_args,
 )
 
@@ -42,7 +49,7 @@ def db_ping() -> bool:
         db.execute(text("SELECT 1"))
         return True
     except Exception as e:
-        print(f"Database ping failed: {e}")
+        logger.error(f"Database ping failed: {e}")
         return False
     finally:
         db.close()
