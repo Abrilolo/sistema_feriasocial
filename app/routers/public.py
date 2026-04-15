@@ -12,6 +12,7 @@ from app.models.temp_code import TempCode
 from app.models.project import Project
 from app.models.user import User
 from app.models.registration import Registration
+from app.models.qr_token import QRToken
 from app.core.security import get_current_student
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -41,17 +42,18 @@ def register_project(
 ):
     temp_code_value = (payload.temp_code or payload.codigo or "").strip().upper()
 
-    # Ya no buscamos al estudiante por matrícula, usamos el de la sesión
-
-    # 3) Verificar check-in
+    # 1) Verificar check-in — flujo obligatorio de la feria
     checkin = db.query(Checkin).filter(Checkin.student_id == student.id).first()
     if not checkin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Debes hacer check-in en la entrada antes de registrar proyectos.",
+            detail=(
+                "Debes presentar tu código QR al staff de la entrada para hacer "
+                "check-in antes de registrarte en un proyecto."
+            ),
         )
 
-    # 4) Verificar que no tenga ya un registro
+    # 2) Verificar que no tenga ya un registro
     existing_registration = (
         db.query(Registration)
         .filter(Registration.student_id == student.id)
@@ -63,7 +65,7 @@ def register_project(
             detail="El estudiante ya está registrado en un proyecto.",
         )
 
-    # 5) Buscar código temporal
+    # 3) Buscar código temporal
     temp_code = (
         db.query(TempCode)
         .filter(TempCode.code == temp_code_value)
@@ -75,21 +77,19 @@ def register_project(
             detail="Código temporal inválido.",
         )
 
-    # 6) Validar que esté activo
+    # 4) Validaciones del código
     if not temp_code.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El código temporal ya no está activo.",
         )
 
-    # 7) Validar que no haya sido usado
     if temp_code.used_at is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El código temporal ya fue utilizado.",
         )
 
-    # 8) Validar expiración
     now = datetime.now(timezone.utc)
     expires_at = temp_code.expires_at
     if expires_at.tzinfo is None:
@@ -101,7 +101,7 @@ def register_project(
             detail="El código temporal ya expiró.",
         )
 
-    # 9) Obtener proyecto
+    # 5) Obtener proyecto
     project = db.query(Project).filter(Project.id == temp_code.project_id).first()
     if not project:
         raise HTTPException(
@@ -109,14 +109,13 @@ def register_project(
             detail="Proyecto no encontrado.",
         )
 
-    # 10) Validar que proyecto siga activo
     if not project.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El proyecto no está activo.",
         )
 
-    # 11) Validar cupo contando registros actuales
+    # 6) Validar cupo
     current_registrations = (
         db.query(Registration)
         .filter(Registration.project_id == project.id)
@@ -129,7 +128,7 @@ def register_project(
             detail="El proyecto ya no tiene cupo disponible.",
         )
 
-    # 12) Crear registro
+    # 7) Crear registro y marcar código
     registration = Registration(
         student_id=student.id,
         project_id=project.id,
@@ -139,7 +138,6 @@ def register_project(
     )
     db.add(registration)
 
-    # 13) Marcar código como usado e inactivo
     temp_code.used_at = datetime.utcnow()
     temp_code.is_active = False
 
@@ -154,45 +152,79 @@ def register_project(
         "registration_id": str(registration.id),
     }
 
+
 @router.post("/generate-qr")
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 def generate_qr_token(
     request: Request,
     payload: GenerateQRRequest,
     db: Session = Depends(get_db),
     student: Student = Depends(get_current_student),
 ):
+    """
+    FASE 3: Genera un QR con UUID opaco de un solo uso.
+
+    Seguridad:
+    - El QR NO contiene la matrícula ni ningún dato personal (PII).
+    - El token UUID es generado en el servidor y guardado en BD.
+    - Caduca en 2 horas y se invalida tras el primer escaneo.
+    - No puede ser falsificado sin acceso a la BD.
+    """
     # Guardar carrera si viene en el payload
     if payload.career:
         student.career = payload.career.strip().upper()
         db.commit()
 
-    # El QR contiene SOLO la matrícula en texto plano.
-    # Es suficiente porque la identidad ya fue verificada por Google OAuth.
-    # Beneficios: QR más pequeño, más fácil de escanear, lógica más simple.
+    # Invalidar QR tokens anteriores del mismo estudiante (no usados)
+    # Así solo hay un QR válido por estudiante a la vez
+    db.query(QRToken).filter(
+        QRToken.student_id == student.id,
+        QRToken.used_at.is_(None),
+    ).delete(synchronize_session=False)
+    db.commit()
+
+    # Crear nuevo token opaco
+    qr = QRToken(
+        token=QRToken.generate_token(),     # UUID v4 aleatorio
+        student_id=student.id,
+        expires_at=QRToken.get_default_expiry(),
+    )
+    db.add(qr)
+    db.commit()
+    db.refresh(qr)
+
     return {
         "ok": True,
-        "qr_data": student.matricula,  # Texto plano, no JWT
+        "qr_data": qr.token,   # UUID opaco — sin PII
+        "expires_at": qr.expires_at.isoformat(),
         "student": {
             "matricula": student.matricula,
             "full_name": student.full_name,
-            "career": student.career
-        }
+            "career": student.career,
+        },
     }
 
 
 @router.get("/projects")
-def get_projects(db: Session = Depends(get_db)):
-    # Traemos proyectos activos y nos unimos con User para obtener el nombre de la organización
-    query = db.query(Project, User).join(User, Project.owner_user_id == User.id).filter(Project.is_active == True)
+def get_projects(
+    db: Session = Depends(get_db),
+    student: Student = Depends(get_current_student),  # Requiere sesión activa
+):
+    """
+    Lista proyectos activos. Requiere student_token para no exponer datos públicamente.
+    """
+    query = (
+        db.query(Project, User)
+        .join(User, Project.owner_user_id == User.id)
+        .filter(Project.is_active == True)
+    )
     results = query.all()
-    
+
     output = []
     for p, u in results:
-        # Calcular cupo disponible
         current_regs = db.query(Registration).filter(Registration.project_id == p.id).count()
         available = max(0, p.capacity - current_regs)
-        
+
         output.append({
             "id": str(p.id),
             "name": p.name,
@@ -205,7 +237,7 @@ def get_projects(db: Session = Depends(get_db)):
             "carreras": p.carreras_permitidas,
             "modalidad": p.modalidad,
             "horas": p.horas_acreditar,
-            "clave": p.clave_programa or "N/A"
+            "clave": p.clave_programa or "N/A",
         })
-    
+
     return output

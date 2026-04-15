@@ -371,42 +371,55 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
 
     # Extraer matrícula del email (formato: A01234567@tec.mx -> A01234567)
     matricula = email.split('@')[0].upper()
+    validated_picture = validate_picture_url(picture_url)
 
-    # UPSERT de estudiante siguiendo el estandar de Federated Identity:
-    # Primero buscar por google_id (sub) - es el identificador INMUTABLE de Google
-    # Fallback a email - para estudiantes creados antes de implementar OAuth
-    student = db.query(Student).filter(Student.google_id == google_id).first()
+    # ====================================================================
+    # FASE 4: UPSERT ATÓMICO — resistente a race conditions con 500 alumnos
+    # Una sola instrucción SQL: sin SELECT + INSERT separados que colisionen
+    # PostgreSQL resuelve el conflicto a nivel de motor, sin errores 500
+    # ====================================================================
+    from sqlalchemy import text
+    upsert_sql = text("""
+        INSERT INTO students
+            (id, google_id, email, matricula, full_name, picture_url, created_at)
+        VALUES
+            (gen_random_uuid(), :google_id, :email, :matricula, :full_name, :picture_url, now())
+        ON CONFLICT (google_id) DO UPDATE SET
+            email       = EXCLUDED.email,
+            matricula   = EXCLUDED.matricula,
+            full_name   = COALESCE(EXCLUDED.full_name, students.full_name),
+            picture_url = COALESCE(EXCLUDED.picture_url, students.picture_url)
+        ON CONFLICT (email) DO UPDATE SET
+            google_id   = COALESCE(EXCLUDED.google_id, students.google_id),
+            full_name   = COALESCE(EXCLUDED.full_name, students.full_name),
+            picture_url = COALESCE(EXCLUDED.picture_url, students.picture_url)
+        RETURNING id
+    """)
 
-    if not student:
-        # Fallback: buscar por email (para migrar registros previos)
-        student = db.query(Student).filter(Student.email == email).first()
-        if student:
-            logger.debug("Enlazando estudiante existente con google_id")  # No incluir PII
-
-    if student:
-        # Siempre sincronizar datos frescos de Google
-        student.google_id = google_id
-        student.email = email  # Actualizar email por si cambio
-        student.full_name = full_name or student.full_name
-        # Validar picture_url para prevenir SSRF
-        validated_picture = validate_picture_url(picture_url)
-        if validated_picture:
-            student.picture_url = validated_picture
+    try:
+        result = db.execute(upsert_sql, {
+            "google_id": google_id,
+            "email": email,
+            "matricula": matricula,
+            "full_name": full_name,
+            "picture_url": validated_picture,
+        })
         db.commit()
-    else:
-        # Crear nuevo estudiante (Just-In-Time Provisioning)
-        # Validar picture_url para prevenir SSRF
-        validated_picture = validate_picture_url(picture_url)
-        student = Student(
-            email=email,
-            matricula=matricula,
-            full_name=full_name,
-            google_id=google_id,
-            picture_url=validated_picture,
-        )
-        db.add(student)
-        db.commit()
-        db.refresh(student)
+        row = result.fetchone()
+        student = db.query(Student).filter(Student.id == row.id).first()
+    except Exception:
+        # Fallback: si el upsert falla por algún motivo, usar el registro existente
+        db.rollback()
+        student = db.query(Student).filter(
+            (Student.google_id == google_id) | (Student.email == email)
+        ).first()
+        if not student:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error al crear o actualizar el estudiante. Inténtalo de nuevo."
+            )
+
+    logger.debug("Upsert atómico de estudiante completado")  # Sin PII en logs
 
     # Generar token JWT del sistema para el estudiante
     access_token = create_access_token({

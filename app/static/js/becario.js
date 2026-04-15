@@ -1,19 +1,20 @@
-// becario.js - Scanner de QR para check-in
-// El QR ahora contiene solo la matrícula en texto plano (más simple y confiable)
+// becario.js — Scanner de QR con tokens opacos (Fase 3)
+// El QR contiene un UUID opaco sin datos personales.
+// Las PII (matrícula, nombre) las devuelve el servidor tras validar el token.
 
 let html5QrCode;
 
 function onScanSuccess(decodedText) {
-    console.log(`QR escaneado: ${decodedText}`);
+    console.log("QR escaneado correctamente");
     stopScanner();
-    performCheckin(decodedText.trim().toUpperCase());
+    performCheckin(decodedText.trim());
 }
 
 function onScanError() {
-    // Errores de escaneo son normales mientras busca el QR, no los mostramos
+    // Errores frecuentes mientras enfoca — no mostrar
 }
 
-async function performCheckin(matricula) {
+async function performCheckin(token) {
     const msgEl = document.getElementById("scannerMessage");
     const infoEl = document.getElementById("scannedInfo");
     const resName = document.getElementById("resName");
@@ -25,12 +26,12 @@ async function performCheckin(matricula) {
     infoEl.style.display = "none";
 
     try {
-        // Enviamos la matrícula en texto plano — el backend la valida contra la BD
+        // Enviamos SOLO el token UUID — sin matrícula ni PII en el payload
         const response = await fetch("/checkins/scan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ matricula }),
-            credentials: "same-origin"  // Envía la cookie access_token automáticamente
+            body: JSON.stringify({ token }),
+            credentials: "same-origin"  // Usa la cookie access_token automáticamente
         });
 
         const data = await response.json();
@@ -39,25 +40,26 @@ async function performCheckin(matricula) {
             throw new Error(data.detail || `Error ${response.status}`);
         }
 
-        // Mostrar resultado
+        // Mostrar resultado — el servidor devuelve los datos del estudiante
         infoEl.style.display = "block";
-        resName.textContent = data.student?.full_name || data.student?.matricula || matricula;
-        resMatricula.textContent = `Matrícula: ${data.student?.matricula || matricula}`;
+        resName.textContent = data.student?.full_name || data.student?.matricula || "—";
+        resMatricula.textContent = `Matrícula: ${data.student?.matricula || "—"}`;
         if (data.student?.career) {
             resMatricula.textContent += ` | ${data.student.career}`;
         }
 
         if (data.already_checked_in) {
-            resStatus.innerHTML = `<span style="background:#fef9c3;color:#854d0e;padding:4px 10px;border-radius:12px;font-size:0.85rem;">Ya tenía check-in</span>`;
+            resStatus.innerHTML = `<span style="background:#fef9c3;color:#854d0e;padding:4px 12px;border-radius:12px;font-size:0.85rem;font-weight:600;">Ya tenía check-in</span>`;
+            msgEl.style.background = "#fef9c3";
+            msgEl.style.color = "#854d0e";
         } else {
-            resStatus.innerHTML = `<span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:12px;font-size:0.85rem;">✅ Check-in registrado</span>`;
+            resStatus.innerHTML = `<span style="background:#dcfce7;color:#15803d;padding:4px 12px;border-radius:12px;font-size:0.85rem;font-weight:600;">✅ Nuevo check-in</span>`;
+            msgEl.style.background = "#dcfce7";
+            msgEl.style.color = "#15803d";
         }
 
         msgEl.textContent = data.message;
-        msgEl.style.background = data.already_checked_in ? "#fef9c3" : "#dcfce7";
-        msgEl.style.color = data.already_checked_in ? "#854d0e" : "#15803d";
         msgEl.style.display = "block";
-
         btnRestart.style.display = "block";
 
     } catch (err) {
