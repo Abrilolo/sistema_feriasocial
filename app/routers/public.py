@@ -162,29 +162,17 @@ def generate_qr_token(
     db: Session = Depends(get_db),
     student: Student = Depends(get_current_student),
 ):
-    from app.core.security import create_access_token
-    from datetime import timedelta
-
-    # ACTUALIZACIÓN: Guardar carrera si viene en el payload
-
-    # ACTUALIZACIÓN: Guardar carrera si viene en el payload
+    # Guardar carrera si viene en el payload
     if payload.career:
         student.career = payload.career.strip().upper()
         db.commit()
 
-    # 3) Generar token de invitación (QR)
-    token_data = {
-        "sub": str(student.id),
-        "type": "invite",
-        "matricula": student.matricula,
-        "name": student.full_name,
-        "career": student.career
-    }
-    token = create_access_token(token_data, expires_delta=timedelta(hours=2))
-
+    # El QR contiene SOLO la matrícula en texto plano.
+    # Es suficiente porque la identidad ya fue verificada por Google OAuth.
+    # Beneficios: QR más pequeño, más fácil de escanear, lógica más simple.
     return {
         "ok": True,
-        "qr_token": token,
+        "qr_data": student.matricula,  # Texto plano, no JWT
         "student": {
             "matricula": student.matricula,
             "full_name": student.full_name,

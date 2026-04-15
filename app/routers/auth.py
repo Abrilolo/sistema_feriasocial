@@ -305,7 +305,7 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         httponly=True,
         secure=settings.ENVIRONMENT == "production",
         samesite="lax",
-        max_age=60 * 60 * 2,  # 2 horas
+        max_age=60 * 30,  # 30 minutos (dispositivos compartidos en la feria)
         path="/",
     )
 

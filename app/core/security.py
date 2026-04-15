@@ -46,7 +46,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
 
-    # ✅ Usa el nombre real que tienes en Settings
     expire_minutes = getattr(settings, "ACCESS_TOKEN_EXPIRE_MINUTES", 60)
 
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=expire_minutes))
@@ -125,3 +124,42 @@ def get_current_student(
         raise HTTPException(status_code=401, detail="Estudiante no encontrado en la base de datos")
 
     return student
+
+
+def get_user_flex(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> User:
+    """
+    Autentica usuarios de staff (Becario/Admin) desde cookie HttpOnly O header Authorization.
+    Resuelve el problema donde el scanner del Becario falla si localStorage está vacío.
+    """
+    # 1. Intentar cookie HttpOnly (flujo normal de navegador)
+    token = request.cookies.get("access_token", "")
+    if token.startswith("Bearer "):
+        token = token[7:]
+
+    # 2. Fallback: Bearer header (Swagger, apps externas)
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Se requiere autenticación de staff.",
+        )
+
+    payload = decode_access_token(token)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token sin subject")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuario no encontrado")
+    if not getattr(user, "is_active", True):
+        raise HTTPException(status_code=403, detail="Usuario inactivo")
+
+    return user

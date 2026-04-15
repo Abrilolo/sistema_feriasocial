@@ -1,20 +1,19 @@
-import { requestJSON } from './api.js?v=2';
-import { getAuthHeaders } from './auth.js';
-import { showMessage, hideMessage, badgeLabel } from './ui.js';
+// becario.js - Scanner de QR para check-in
+// El QR ahora contiene solo la matrícula en texto plano (más simple y confiable)
 
 let html5QrCode;
 
-function onScanSuccess(decodedText, decodedResult) {
-    console.log(`Scan result: ${decodedText}`);
+function onScanSuccess(decodedText) {
+    console.log(`QR escaneado: ${decodedText}`);
     stopScanner();
-    performCheckin(decodedText);
+    performCheckin(decodedText.trim().toUpperCase());
 }
 
-function onScanError(errorMessage) {
-    // console.warn(`Scan error: ${errorMessage}`);
+function onScanError() {
+    // Errores de escaneo son normales mientras busca el QR, no los mostramos
 }
 
-async function performCheckin(qrToken) {
+async function performCheckin(matricula) {
     const msgEl = document.getElementById("scannerMessage");
     const infoEl = document.getElementById("scannedInfo");
     const resName = document.getElementById("resName");
@@ -26,27 +25,43 @@ async function performCheckin(qrToken) {
     infoEl.style.display = "none";
 
     try {
-        const data = await requestJSON("/checkins/scan", {
+        // Enviamos la matrícula en texto plano — el backend la valida contra la BD
+        const response = await fetch("/checkins/scan", {
             method: "POST",
-            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-            body: JSON.stringify({ qr_token: qrToken, method: "QR" })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ matricula }),
+            credentials: "same-origin"  // Envía la cookie access_token automáticamente
         });
 
-        // Show info
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || `Error ${response.status}`);
+        }
+
+        // Mostrar resultado
         infoEl.style.display = "block";
-        resName.textContent = `✅ ${data.matricula}`;
-        resMatricula.textContent = "Check-in realizado con éxito.";
-        resStatus.innerHTML = badgeLabel("COMPLETADO", "success");
-        
+        resName.textContent = data.student?.full_name || data.student?.matricula || matricula;
+        resMatricula.textContent = `Matrícula: ${data.student?.matricula || matricula}`;
+        if (data.student?.career) {
+            resMatricula.textContent += ` | ${data.student.career}`;
+        }
+
+        if (data.already_checked_in) {
+            resStatus.innerHTML = `<span style="background:#fef9c3;color:#854d0e;padding:4px 10px;border-radius:12px;font-size:0.85rem;">Ya tenía check-in</span>`;
+        } else {
+            resStatus.innerHTML = `<span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:12px;font-size:0.85rem;">✅ Check-in registrado</span>`;
+        }
+
         msgEl.textContent = data.message;
-        msgEl.style.background = "#dcfce7";
-        msgEl.style.color = "#15803d";
+        msgEl.style.background = data.already_checked_in ? "#fef9c3" : "#dcfce7";
+        msgEl.style.color = data.already_checked_in ? "#854d0e" : "#15803d";
         msgEl.style.display = "block";
 
         btnRestart.style.display = "block";
 
     } catch (err) {
-        msgEl.textContent = "Error: " + err.message;
+        msgEl.textContent = "⚠️ " + (err.message || "Error al registrar check-in");
         msgEl.style.background = "#fee2e2";
         msgEl.style.color = "#b91c1c";
         msgEl.style.display = "block";
@@ -66,13 +81,13 @@ function startScanner() {
 
     html5QrCode = new Html5Qrcode("reader");
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-    
+
     html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
     .then(() => {
         if (btnStart) btnStart.parentElement.style.display = "none";
     })
     .catch(err => {
-        console.error("Unable to start scanner", err);
+        console.error("Error al iniciar cámara:", err);
         if (btnStart) btnStart.removeAttribute("disabled");
         const errorMessage = document.getElementById("scannerMessage");
         errorMessage.textContent = "Error al iniciar cámara: " + err;
@@ -86,7 +101,7 @@ function stopScanner() {
     if (html5QrCode && html5QrCode.isScanning) {
         html5QrCode.stop().then(() => {
             html5QrCode.clear();
-        }).catch(err => console.error("Err clearing", err));
+        }).catch(err => console.error("Error deteniendo scanner:", err));
     }
 }
 
@@ -96,12 +111,15 @@ document.addEventListener("DOMContentLoaded", () => {
         btnStart.addEventListener("click", startScanner);
     }
 
-    document.getElementById("btnRestartScanner").addEventListener("click", () => {
-        document.getElementById("btnRestartScanner").style.display = "none";
-        document.getElementById("scannerMessage").style.display = "none";
-        document.getElementById("scannedInfo").style.display = "none";
-        const cameraControls = document.getElementById("cameraControls");
-        if (cameraControls) cameraControls.style.display = "block";
-        startScanner();
-    });
+    const btnRestart = document.getElementById("btnRestartScanner");
+    if (btnRestart) {
+        btnRestart.addEventListener("click", () => {
+            btnRestart.style.display = "none";
+            document.getElementById("scannerMessage").style.display = "none";
+            document.getElementById("scannedInfo").style.display = "none";
+            const cameraControls = document.getElementById("cameraControls");
+            if (cameraControls) cameraControls.style.display = "block";
+            startScanner();
+        });
+    }
 });
