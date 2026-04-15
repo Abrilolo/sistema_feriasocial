@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str | None = None
     STUDENT_EMAIL_DOMAIN: str = "tec.mx"
     ENVIRONMENT: str = "development"
+    # URL base de la app (necesaria en produccion detras de proxy HTTPS)
+    APP_BASE_URL: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

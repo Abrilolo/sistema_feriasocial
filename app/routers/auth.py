@@ -183,22 +183,27 @@ async def google_login(request: Request):
     # 1. Limpiar sesión previa
     request.session.clear()
 
-    redirect_uri = request.url_for('google_callback')
-    
-    # Generamos la respuesta de redirección a Google
+    # 2. Construir redirect_uri explicitamente para evitar http:// en proxies HTTPS
+    if settings.APP_BASE_URL:
+        redirect_uri = f"{settings.APP_BASE_URL.rstrip('/')}/auth/google/callback"
+    else:
+        redirect_uri = str(request.url_for('google_callback'))
+
+    print(f"DEBUG: redirect_uri enviado a Google -> {redirect_uri}")
+
     google_redirect = await oauth.google.authorize_redirect(
         request,
-        str(redirect_uri),
+        redirect_uri,
     )
 
-    # 2. Añadir headers anti-cache para evitar que el navegador reuse la redirección anterior
+    # 3. Añadir headers anti-cache
     from fastapi.responses import RedirectResponse as RR
     response = RR(url=google_redirect.headers['location'], status_code=302)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
-    
-    # Copiar cookies de sesión (para el state de Authlib) a la nueva respuesta
+
+    # Copiar cookies de sesión de Authlib (contiene el state de OAuth)
     for key, value in google_redirect.headers.items():
         if key.lower() == 'set-cookie':
             response.raw_headers.append((b'set-cookie', value.encode()))
