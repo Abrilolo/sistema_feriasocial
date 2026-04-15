@@ -4,7 +4,10 @@
       "Bash(pip install:*)",
       "Bash(python:*)",
       "Bash(chmod +x:*)",
-      "Bash(alembic revision:*)"
+      "Bash(alembic revision:*)",
+      "Bash(alembic upgrade *)",
+      "Bash(alembic current *)",
+      "Bash(alembic stamp *)"
     ]
   }
 }
