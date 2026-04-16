@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Mi QR de Entrada{% endblock %}
+{% block title %}Acceso Estudiante - Feria Servicio Social{% endblock %}
 
 {% block content %}
 <div class="page-center">
-  <div class="card fade-in-up" style="max-width: 450px; text-align: center;">
+  <div class="card fade-in-up" style="max-width: 480px; text-align: center;">
     <div class="section-logo-wrap">
       <img
         src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
@@ -13,14 +13,14 @@
       />
     </div>
 
-    <h1>Check-in con QR</h1>
+    <h1>Acceso Estudiante</h1>
 
     {% if not is_authenticated %}
-    {# Vista para usuarios NO autenticados - Botón de Google #}
-    <p class="muted">Inicia sesión con tu cuenta institucional para generar tu código de acceso.</p>
+    {# ========== VISTA: NO AUTENTICADO ========== #}
+    <p class="muted">Inicia sesión con tu cuenta institucional para acceder a la feria.</p>
 
     <div style="margin-top: 30px;">
-      <a href="/auth/google/login" class="google-btn" style="
+      <a href="/auth/google/login" class="google-btn" id="btnGoogleLogin" style="
         display: inline-flex;
         align-items: center;
         gap: 10px;
@@ -50,63 +50,159 @@
     </p>
 
     {% else %}
-    {# Vista para usuarios autenticados - Datos del estudiante y QR #}
-    <div style="margin-top: 20px;">
+    {# ========== VISTA: AUTENTICADO ========== #}
+
+    {# Tarjeta de identidad actual #}
+    <div style="margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
       {% if student.picture_url %}
       <img src="{{ student.picture_url }}" alt="Foto de perfil" style="
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid var(--primary);
-        margin-bottom: 15px;
+        border: 2px solid var(--primary);
+        margin-bottom: 10px;
       ">
       {% endif %}
 
-      <h3 style="color: var(--primary); margin-bottom: 5px;">{{ student.full_name or student.matricula }}</h3>
-      <p class="muted">{{ student.email }}</p>
-      <p style="font-weight: bold; color: var(--success);">{{ student.matricula }}</p>
-      {% if student.career %}
-      <p style="color: var(--muted);">{{ student.career }}</p>
-      {% endif %}
-    </div>
-
-    <div style="margin-top: 20px;">
-      <button id="btnGenerateQR" class="btn-primary" style="width: 100%;">
-        Generar mi Código QR
-      </button>
-    </div>
-
-    <div id="qrContainer" style="display:none; margin-top: 30px; animation: fadeIn 0.5s ease-out;">
-      <h3 style="color: var(--primary);">¡Listo! Presenta este código</h3>
-
-      <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content; margin: 20px auto;"></div>
-
-      <p class="muted" style="font-size: 0.9rem;">
-        Este código es personal e intransferible.<br>
-        Staff de la feria lo escaneará para darte acceso.
+      <h3 style="color: var(--primary); margin: 5px 0; font-size: 1.1rem;">
+        {{ student.full_name or student.matricula }}
+      </h3>
+      <p class="muted" style="margin: 2px 0; font-size: 0.9rem;">{{ student.email }}</p>
+      <p style="font-weight: bold; color: var(--success); margin: 2px 0; font-size: 0.95rem;">
+        {{ student.matricula }}
       </p>
+      {% if student.career %}
+      <p style="color: var(--muted); margin: 2px 0; font-size: 0.85rem;">{{ student.career }}</p>
+      {% endif %}
 
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-        <a href="/catalogo-proyectos" class="btn-primary" style="background: var(--primary); color: white; text-decoration: none; padding: 10px; border-radius: 6px;">
-          Explorar Catálogo de Proyectos
+      <div style="margin-top: 10px;">
+        <span style="
+          display: inline-block;
+          background: #dcfce7;
+          color: #166534;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        ">
+          ✓ Sesión activa
+        </span>
+      </div>
+    </div>
+
+    {# Opciones de acción #}
+    <div style="margin-top: 25px;">
+      <h4 style="color: var(--text); margin-bottom: 15px; font-size: 1rem;">¿Qué deseas hacer?</h4>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {# Opción principal: Continuar con mi cuenta #}
+        <a href="/acceso-estudiante?section=qr" class="btn-primary" style="
+          background: var(--primary);
+          color: white;
+          text-decoration: none;
+          padding: 14px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        ">
+          <span>📱</span> Generar mi Código QR
         </a>
-        <a href="/inscripcion-proyecto" class="btn-outline" style="text-decoration: none; padding: 10px; border-radius: 6px;">
-          Registrar Proyecto
+
+        {# Opción secundaria: Ver catálogo #}
+        <a href="/catalogo-proyectos" class="btn-outline" style="
+          text-decoration: none;
+          padding: 12px 20px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        ">
+          <span>📋</span> Ver Catálogo de Proyectos
+        </a>
+
+        {# Opción terciaria: Inscribir proyecto #}
+        <a href="/inscripcion-proyecto" class="btn-outline" style="
+          text-decoration: none;
+          padding: 12px 20px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        ">
+          <span>📝</span> Registrar en Proyecto
         </a>
       </div>
     </div>
 
-    <div id="qrError" class="error" style="display:none; margin-top: 20px;"></div>
+    {# Separador #}
+    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border);">
+      <p class="muted" style="font-size: 0.85rem; margin-bottom: 12px;">
+        ¿No eres tú o quieres usar otra cuenta?
+      </p>
 
-    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-      <a href="/auth/logout" style="color: var(--danger); text-decoration: none; font-size: 0.9rem;">
-        Cerrar sesión
-      </a>
-      <span style="color: var(--border);">|</span>
-      <a href="/auth/logout" style="color: var(--muted); text-decoration: none; font-size: 0.9rem;">
-        🔄 Soy otro estudiante
-      </a>
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <a href="/auth/google/switch-account" style="
+          color: var(--muted);
+          text-decoration: none;
+          font-size: 0.85rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        " onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+          🔄 Cambiar cuenta
+        </a>
+
+        <a href="/auth/logout" style="
+          color: var(--danger);
+          text-decoration: none;
+          font-size: 0.85rem;
+          padding: 8px 16px;
+          border-radius: 6px;
+          border: 1px solid #fecaca;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        " onmouseover="this.style.background='#fef2f2';" onmouseout="this.style.background='transparent';">
+          🚪 Cerrar sesión
+        </a>
+      </div>
+    </div>
+
+    {# Sección QR (oculta por defecto, se muestra si hay param ?section=qr) #}
+    <div id="qrSection" style="display: none; margin-top: 30px; padding-top: 25px; border-top: 2px solid var(--primary);">
+      <h3 style="color: var(--primary); margin-bottom: 15px;">Tu Código QR</h3>
+
+      <button id="btnGenerateQR" class="btn-primary" style="width: 100%; margin-bottom: 20px;">
+        📱 Generar mi Código QR
+      </button>
+
+      <div id="qrContainer" style="display:none; animation: fadeIn 0.5s ease-out;">
+        <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content; margin: 0 auto 15px;"></div>
+
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+          <p style="color: #166534; margin: 0; font-size: 0.9rem; font-weight: 500;">
+            ✅ Tu código está listo
+          </p>
+          <p class="muted" style="margin: 5px 0 0 0; font-size: 0.8rem;">
+            Presenta este QR al staff de entrada. Es válido por 2 horas y de un solo uso.
+          </p>
+        </div>
+      </div>
+
+      <div id="qrError" class="error" style="display:none;"></div>
     </div>
     {% endif %}
   </div>
@@ -117,48 +213,105 @@
 {% if is_authenticated %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script type="module">
-  import { requestJSON } from "{{ url_for('static', path='js/api.js') }}?v=2";
+  import { requestJSON } from "{{ url_for('static', path='js/api.js') }}?v=3";
 
-  const btnGenerateQR = document.getElementById("btnGenerateQR");
-  const qrContainer = document.getElementById("qrContainer");
-  const qrError = document.getElementById("qrError");
-  const qrcodeDiv = document.getElementById("qrcode");
-
-  btnGenerateQR.addEventListener("click", async () => {
-    qrError.style.display = "none";
-    btnGenerateQR.disabled = true;
-    btnGenerateQR.textContent = "Generando...";
-
-    try {
-      const data = await requestJSON("/public/generate-qr", {
-        method: "POST",
-        body: JSON.stringify({
-          career: "{{ student.career or '' }}"
-        })
-      });
-
-      qrContainer.style.display = "block";
-      qrcodeDiv.innerHTML = "";
-
-      // QR ahora contiene solo la matricula en texto plano (más pequeño, más fácil de escanear)
-      new QRCode(qrcodeDiv, {
-        text: data.qr_data,
-        width: 256,
-        height: 256,
-        colorDark : "#1e293b",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
-      });
-
-      btnGenerateQR.style.display = "none";
-
-    } catch (err) {
-      qrError.textContent = err.message || "Error al generar el QR";
-      qrError.style.display = "block";
-      btnGenerateQR.disabled = false;
-      btnGenerateQR.textContent = "Generar mi Código QR";
+  // Mostrar sección QR si hay param ?section=qr
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('section') === 'qr') {
+    const qrSection = document.getElementById('qrSection');
+    if (qrSection) {
+      qrSection.style.display = 'block';
+      // Auto-scroll a la sección
+      qrSection.scrollIntoView({ behavior: 'smooth' });
     }
-  });
+  }
+
+  const btnGenerateQR = document.getElementById('btnGenerateQR');
+  const qrContainer = document.getElementById('qrContainer');
+  const qrError = document.getElementById('qrError');
+  const qrcodeDiv = document.getElementById('qrcode');
+
+  if (btnGenerateQR) {
+    btnGenerateQR.addEventListener('click', async () => {
+      qrError.style.display = 'none';
+      btnGenerateQR.disabled = true;
+      btnGenerateQR.textContent = 'Generando...';
+
+      try {
+        const data = await requestJSON('/public/generate-qr', {
+          method: 'POST',
+          body: JSON.stringify({
+            career: '{{ student.career or "" }}'
+          })
+        });
+
+        qrContainer.style.display = 'block';
+        qrcodeDiv.innerHTML = '';
+
+        // El QR contiene un UUID opaco (no la matrícula)
+        new QRCode(qrcodeDiv, {
+          text: data.qr_data,
+          width: 220,
+          height: 220,
+          colorDark: '#1e293b',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Ocultar botón y mostrar info de expiración
+        btnGenerateQR.style.display = 'none';
+
+        // Si hay expires_at, mostrar tiempo restante
+        if (data.expires_at) {
+          const expiresAt = new Date(data.expires_at);
+          const now = new Date();
+          const diffMs = expiresAt - now;
+          const diffMins = Math.round(diffMs / 60000);
+
+          if (diffMins > 0) {
+            const infoDiv = document.createElement('div');
+            infoDiv.style.cssText = 'margin-top: 10px; font-size: 0.8rem; color: #64748b;';
+            infoDiv.textContent = `⏱️ Válido por ${diffMins} minutos`;
+            qrContainer.appendChild(infoDiv);
+          }
+        }
+
+      } catch (err) {
+        qrError.textContent = err.message || 'Error al generar el QR. Intenta de nuevo.';
+        qrError.style.display = 'block';
+        btnGenerateQR.disabled = false;
+        btnGenerateQR.textContent = '📱 Generar mi Código QR';
+      }
+    });
+  }
 </script>
 {% endif %}
+
+{# Script para detectar sesión activa y actualizar UI dinámicamente #}
+<script type="module">
+  // Verificar si hay sesión activa al cargar la página (para la vista no autenticada)
+  async function checkSession() {
+    try {
+      const response = await fetch('/auth/session', {
+        credentials: 'same-origin'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Si estamos en vista no autenticada pero hay sesión, recargar para mostrar vista autenticada
+        if (data.authenticated && !{{ is_authenticated|lower }}) {
+          window.location.reload();
+        }
+      }
+    } catch (e) {
+      // Silenciar errores de red
+    }
+  }
+
+  // Verificar sesión al cargar
+  if (!{{ is_authenticated|lower }}) {
+    checkSession();
+  }
+</script>
 {% endblock %}

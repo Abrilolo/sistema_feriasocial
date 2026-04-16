@@ -130,14 +130,57 @@ app.add_middleware(SessionMiddleware, secret_key=settings.JWT_SECRET)
 # Archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+def validate_required_config():
+    """Valida que todas las configuraciones críticas estén presentes."""
+    critical_vars = {
+        "GOOGLE_CLIENT_ID": settings.GOOGLE_CLIENT_ID,
+        "GOOGLE_CLIENT_SECRET": settings.GOOGLE_CLIENT_SECRET,
+        "JWT_SECRET": settings.JWT_SECRET,
+        "DATABASE_URL": settings.DATABASE_URL,
+    }
+
+    missing = [name for name, value in critical_vars.items() if not value]
+
+    if missing:
+        logger.error("=" * 60)
+        logger.error("CONFIGURACIÓN INCOMPLETA - La aplicación no puede iniciar")
+        logger.error("=" * 60)
+        for var in missing:
+            logger.error(f"  ✗ {var} no está configurada")
+        logger.error("=" * 60)
+        raise RuntimeError(
+            f"Variables de entorno faltantes: {', '.join(missing)}. "
+            "Verifica tu archivo .env"
+        )
+
+    # Validar JWT_SECRET tiene longitud suficiente
+    if len(settings.JWT_SECRET) < 32:
+        logger.error("JWT_SECRET debe tener al menos 32 caracteres")
+        raise RuntimeError("JWT_SECRET demasiado corto")
+
+    # Validar APP_BASE_URL en producción
+    if is_production and not settings.APP_BASE_URL:
+        logger.warning(
+            "APP_BASE_URL no configurado en producción. "
+            "Los redirects OAuth pueden fallar."
+        )
+
+    logger.info("✓ Configuración validada correctamente")
+
+
 # Evento de inicio
 @app.on_event("startup")
 async def startup_event():
     logger.info("Iniciando la aplicación...")
+
+    # Validar configuración crítica
+    validate_required_config()
+
+    # Verificar conexión a BD
     if db_ping():
-        logger.info("Conexión a la base de datos: OK")
+        logger.info("✓ Conexión a la base de datos: OK")
     else:
-        logger.error("Error al conectar con la base de datos")
+        logger.error("✗ Error al conectar con la base de datos")
 
 # Manejador de errores global para SQLAlchemy
 @app.exception_handler(SQLAlchemyError)
