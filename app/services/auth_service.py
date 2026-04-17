@@ -305,6 +305,21 @@ class StudentAuthService:
         return email.split("@")[0].upper()
 
     @staticmethod
+    def hash_google_id(google_id: str) -> str:
+        """
+        Hashea el ID de Google de forma determinística (con pepper).
+        Esto anonimiza el ID en la base de datos sin perder la capacidad
+        de identificación única.
+        """
+        if not google_id:
+            return None
+        return hmac.new(
+            settings.JWT_SECRET.encode(),
+            f"g_id.{google_id}".encode(),
+            hashlib.sha256
+        ).hexdigest()
+
+    @staticmethod
     def upsert_student(
         db: Session,
         google_id: str,
@@ -331,6 +346,7 @@ class StudentAuthService:
             AuthException: Si el upsert falla
         """
         matricula = StudentAuthService.extract_matricula(email)
+        hashed_google_id = StudentAuthService.hash_google_id(google_id)
 
         # Upsert atómico resistente a race conditions
         upsert_sql = text("""
@@ -342,14 +358,13 @@ class StudentAuthService:
                 email       = EXCLUDED.email,
                 matricula   = EXCLUDED.matricula,
                 full_name   = COALESCE(EXCLUDED.full_name, students.full_name),
-                picture_url = COALESCE(EXCLUDED.picture_url, students.picture_url),
-                updated_at  = now()
+                picture_url = COALESCE(EXCLUDED.picture_url, students.picture_url)
             RETURNING id
         """)
 
         try:
             result = db.execute(upsert_sql, {
-                "google_id": google_id,
+                "google_id": hashed_google_id,
                 "email": email,
                 "matricula": matricula,
                 "full_name": full_name,
