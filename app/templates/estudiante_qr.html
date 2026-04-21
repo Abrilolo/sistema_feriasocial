@@ -289,6 +289,8 @@
 
 {# Script para detectar sesión activa y actualizar UI dinámicamente #}
 <script type="module">
+  const isAuthenticated = {{ 'true' if is_authenticated else 'false' }};
+
   // Verificar si hay sesión activa al cargar la página (para la vista no autenticada)
   async function checkSession() {
     try {
@@ -300,7 +302,7 @@
         const data = await response.json();
 
         // Si estamos en vista no autenticada pero hay sesión, recargar para mostrar vista autenticada
-        if (data.authenticated && !{{ is_authenticated|lower }}) {
+        if (data.authenticated && !isAuthenticated) {
           window.location.reload();
         }
       }
@@ -310,7 +312,7 @@
   }
 
   // Verificar sesión al cargar
-  if (!{{ is_authenticated|lower }}) {
+  if (!isAuthenticated) {
     checkSession();
   }
 </script>
