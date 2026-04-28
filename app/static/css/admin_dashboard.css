@@ -1,0 +1,812 @@
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD — Supplementary Styles
+   Feria Social · Tecnológico de Monterrey
+   Archivo: app/static/css/admin_dashboard.css
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── LAYOUT BASE ────────────────────────────────────────────── */
+.adm {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem 1.75rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── SECTION LABELS ─────────────────────────────────────────── */
+.adm-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: -0.25rem;
+  opacity: 0.75;
+}
+
+.adm-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(56, 189, 248, 0.35), transparent 70%);
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+.adm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 2rem 2.5rem !important;
+  border-left: 3px solid #38bdf8 !important;
+  position: relative;
+  overflow: hidden;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.adm-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(56, 189, 248, 0.06) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.adm-header__eyebrow {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
+}
+
+.adm-header__title {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 2.75rem !important;
+  font-weight: 800 !important;
+  color: #f8fafc !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
+  margin-bottom: 0.6rem !important;
+}
+
+.adm-header__sub {
+  font-size: 0.825rem;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+
+/* Live badge */
+.adm-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 100px;
+  padding: 7px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #10b981;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.adm-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: adm-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes adm-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* ── KPI GRID ───────────────────────────────────────────────── */
+.adm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* Override panel para KPI */
+.kpi-card {
+  padding: 1.6rem 1.75rem !important;
+  border-left: 3px solid transparent !important;
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Color variants */
+.kpi-card.kpi-blue {
+  border-left-color: #38bdf8 !important;
+}
+
+.kpi-card.kpi-green {
+  border-left-color: #10b981 !important;
+}
+
+.kpi-card.kpi-amber {
+  border-left-color: #f59e0b !important;
+}
+
+.kpi-card.kpi-purple {
+  border-left-color: #a78bfa !important;
+}
+
+/* Glow on hover */
+.kpi-card.kpi-blue:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(56, 189, 248, 0.2) !important;
+}
+
+.kpi-card.kpi-green:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(16, 185, 129, 0.2) !important;
+}
+
+.kpi-card.kpi-amber:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(245, 158, 11, 0.2) !important;
+}
+
+.kpi-card.kpi-purple:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(167, 139, 250, 0.2) !important;
+}
+
+.kpi-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.kpi-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #f8fafc;
+}
+
+.kpi-card.kpi-blue .kpi-number {
+  color: #38bdf8;
+}
+
+.kpi-card.kpi-green .kpi-number {
+  color: #10b981;
+}
+
+.kpi-card.kpi-amber .kpi-number {
+  color: #f59e0b;
+}
+
+.kpi-card.kpi-purple .kpi-number {
+  color: #a78bfa;
+}
+
+.kpi-sub {
+  font-size: 0.75rem;
+  color: #475569;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── CHART PANELS ───────────────────────────────────────────── */
+.adm-charts-row {
+  display: grid;
+  gap: 1rem;
+}
+
+.adm-charts-row.cols-3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.adm-charts-row.cols-2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.chart-panel {
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-panel-header {
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-panel-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  font-style: normal;
+}
+
+.chart-panel-icon.blue {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+}
+
+.chart-panel-icon.green {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.chart-panel-icon.amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+
+.chart-panel-icon.purple {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+}
+
+.chart-panel-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.chart-legend-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.chart-panel-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  flex: 1;
+}
+
+/* Override the dark theme's chart container */
+body.admin-dark-theme .chart-container-tech {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  height: 260px;
+}
+
+/* ── PANEL HEADER (Tables / Sections) ───────────────────────── */
+.adm-panel-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.adm-panel-header h2 {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em;
+}
+
+/* ── ACCORDION / DETAILS ────────────────────────────────────── */
+.adm-accordion {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.adm-accordion>summary {
+  padding: 1.25rem 1.75rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f8fafc !important;
+  outline: none;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.adm-accordion>summary::-webkit-details-marker {
+  display: none;
+}
+
+.adm-accordion>summary::before {
+  content: '›';
+  font-size: 1.3rem;
+  color: #38bdf8;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-block;
+  line-height: 1;
+}
+
+.adm-accordion[open]>summary::before {
+  transform: rotate(90deg);
+}
+
+.adm-accordion>summary:hover {
+  background: rgba(56, 189, 248, 0.04);
+}
+
+.adm-accordion-body {
+  padding: 1.5rem 1.75rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── FORMS ──────────────────────────────────────────────────── */
+.adm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.adm-form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.adm-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffffff !important;
+}
+
+.adm-form input,
+.adm-form select,
+.adm-form textarea {
+  font-family: inherit;
+  padding: 10px 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(9, 11, 16, 0.55);
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.adm-form input:focus,
+.adm-form select:focus,
+.adm-form textarea:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.adm-form input::placeholder,
+.adm-form textarea::placeholder {
+  color: #334155;
+}
+
+.adm-form-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0.25rem 0;
+}
+
+.adm-form-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  opacity: 0.75;
+  margin-bottom: -0.25rem;
+}
+
+/* ── TAGS (Carreras) ────────────────────────────────────────── */
+.adm-tags-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.adm-tags-input {
+  flex: 1;
+  padding: 10px 13px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  background: rgba(9, 11, 16, 0.55) !important;
+  color: #e2e8f0 !important;
+  font-size: 0.875rem !important;
+}
+
+.adm-tags-add-btn {
+  padding: 0 18px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.adm-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.03);
+  margin-top: 4px;
+}
+
+/* ── TABLES ─────────────────────────────────────────────────── */
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adm-table thead tr {
+  background: transparent !important;
+}
+
+.adm-table th {
+  padding: 11px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #475569 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  text-align: left;
+  font-weight: 700;
+}
+
+.adm-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.adm-table tbody tr {
+  transition: background 0.15s;
+}
+
+.adm-table tbody tr:hover {
+  background: rgba(56, 189, 248, 0.04);
+}
+
+.adm-table .cell-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.adm-table .cell-name {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.adm-table .cell-sub {
+  font-size: 0.75rem;
+  color: #475569;
+  margin-top: 2px;
+}
+
+/* Occupation bar */
+.occ-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.occ-bar-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.occ-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.6s ease;
+}
+
+.occ-bar-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  min-width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── SEARCH ─────────────────────────────────────────────────── */
+.adm-search {
+  padding: 9px 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(9, 11, 16, 0.55);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 0.875rem;
+  width: 260px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.adm-search::placeholder {
+  color: #334155;
+}
+
+.adm-search:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+/* ── MODAL ──────────────────────────────────────────────────── */
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.adm-modal {
+  background: #12151c;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 940px;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.adm-modal-header {
+  padding: 1.75rem 2rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  background: #12151c;
+  z-index: 1;
+}
+
+.adm-modal-header h2 {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+}
+
+.adm-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.adm-modal-close:hover {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #f43f5e;
+}
+
+.adm-modal-body {
+  padding: 1.75rem 2rem 2rem;
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .adm {
+    padding: 1rem 1rem 4rem;
+  }
+
+  .adm-header {
+    padding: 1.5rem 1.5rem !important;
+  }
+
+  .adm-header__title {
+    font-size: 2rem !important;
+  }
+
+  .adm-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .adm-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adm-header__title {
+    font-size: 1.6rem !important;
+  }
+
+  .adm-search {
+    width: 100%;
+  }
+
+  .adm-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .adm-panel-header>div {
+    width: 100%;
+  }
+
+  .adm-panel-header>div .adm-search {
+    width: 100%;
+  }
+
+  .kpi-number {
+    font-size: 2.2rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SPECIFICITY OVERRIDES — prevent styles.css conflicts
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Force grid on KPI row */
+body.admin-dark-theme .adm-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+/* Force grid on chart rows */
+body.admin-dark-theme .adm-charts-row.cols-3 {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+body.admin-dark-theme .adm-charts-row.cols-2 {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+}
+
+/* Force adm section layout */
+body.admin-dark-theme section.adm {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 2rem 1.75rem 5rem !important;
+  /* Override any container constraints from base */
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* KPI card layout */
+body.admin-dark-theme .kpi-card {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Chart panels */
+body.admin-dark-theme .chart-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Section label line */
+body.admin-dark-theme .adm-section-label {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Header panel border */
+body.admin-dark-theme .adm-header {
+  border-left: 3px solid #38bdf8 !important;
+}
+
+/* Live badge display */
+body.admin-dark-theme .adm-live-badge {
+  display: flex !important;
+}
+
+/* Forms row */
+body.admin-dark-theme .adm-form-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
+}
+
+/* Tables */
+body.admin-dark-theme .adm-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+/* Panels with zero padding for tables/charts */
+body.admin-dark-theme .panel[style*="padding: 0"],
+body.admin-dark-theme .chart-panel {
+  padding: 0 !important;
+}
+
+/* Override base container max-width for admin */
+body.admin-dark-theme main.container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}

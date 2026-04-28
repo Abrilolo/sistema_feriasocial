@@ -1,250 +1,460 @@
 {% extends "base.html" %}
 
-{% block title %}Panel de Administrador - Sistema Feria Social{% endblock %}
+{% block title %}Centro de Mando — Feria Social{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/admin_dashboard.css') }}?v=2" />
+{% endblock %}
+{% block body_class %}admin-dark-theme{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-  <div class="panel header-panel" style="background: #ffffff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-    <div class="header-info">
-      <h1 style="margin-bottom: 5px;">Panel de Administrador</h1>
-      <p class="muted" style="margin-top: 8px;">Supervisión global y herramientas operativas.</p>
+<section class="adm">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════ -->
+  <header class="adm-header panel">
+    <div class="adm-header__left">
+      <span class="adm-header__eyebrow">Tecnológico de Monterrey · Feria Social</span>
+      <h1 class="adm-header__title">Panel de Administrador</h1>
+      <p class="adm-header__sub">Supervisión global · métricas en tiempo real · herramientas operativas</p>
     </div>
+    <div class="adm-live-badge">
+      <span class="adm-live-dot"></span>
+      FERIA EN VIVO
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════
+       KPI CARDS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Indicadores Clave</div>
+  <div class="adm-kpi-grid">
+
+    <div class="panel kpi-card kpi-blue">
+      <div class="kpi-label">Estudiantes</div>
+      <div class="kpi-number" id="kpiStudents">—</div>
+    </div>
+
+    <div class="panel kpi-card kpi-green">
+      <div class="kpi-label">Check-Ins</div>
+      <div class="kpi-number" id="kpiCheckins">—</div>
+    </div>
+
+    <div class="panel kpi-card kpi-amber">
+      <div class="kpi-label">Registros a Proyectos</div>
+      <div class="kpi-number" id="kpiRegistrations">—</div>
+    </div>
+
+    <div class="panel kpi-card kpi-purple">
+      <div class="kpi-label">Proyectos</div>
+      <div class="kpi-number" id="kpiProjects">—</div>
+      <div class="kpi-sub">Llenos:&nbsp;<span id="kpiProjectsFull">—</span></div>
+    </div>
+
   </div>
 
-  <!-- KPI Cards -->
-  <div class="admin-kpis" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-    <div class="panel kpi-card" style="text-align: center; padding: 20px;">
-      <h3 style="margin: 0; color: var(--primary); font-size: 2rem;" id="kpiStudents">-</h3>
-      <p class="muted" style="margin: 5px 0 0 0;">Estudiantes</p>
+  <!-- ══════════════════════════════════════════════════════════
+       CHARTS ROW 1 — Visión Rápida (Donut / Polar)
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Visión Rápida</div>
+  <div class="adm-charts-row cols-3">
+
+    <div class="panel chart-panel">
+      <div class="chart-panel-header">
+        <i class="chart-panel-icon blue">◉</i>
+        <span class="chart-panel-title">Progreso del Evento</span>
+      </div>
+      <div class="chart-panel-body">
+        <div class="chart-container-tech">
+          <canvas id="checkinChart"></canvas>
+        </div>
+      </div>
     </div>
-    <div class="panel kpi-card" style="text-align: center; padding: 20px;">
-      <h3 style="margin: 0; color: var(--primary); font-size: 2rem;" id="kpiCheckins">-</h3>
-      <p class="muted" style="margin: 5px 0 0 0;">Check-Ins</p>
+
+    <div class="panel chart-panel">
+      <div class="chart-panel-header">
+        <i class="chart-panel-icon amber">◈</i>
+        <span class="chart-panel-title">Códigos QR (Pases)</span>
+      </div>
+      <div class="chart-panel-body">
+        <div class="chart-container-tech">
+          <canvas id="qrChart"></canvas>
+        </div>
+      </div>
     </div>
-    <div class="panel kpi-card" style="text-align: center; padding: 20px;">
-      <h3 style="margin: 0; color: var(--primary); font-size: 2rem;" id="kpiRegistrations">-</h3>
-      <p class="muted" style="margin: 5px 0 0 0;">Registros a Proyectos</p>
+
+    <div class="panel chart-panel">
+      <div class="chart-panel-header">
+        <i class="chart-panel-icon purple">⬡</i>
+        <span class="chart-panel-title">Personal Desplegado</span>
+      </div>
+      <div class="chart-panel-body">
+        <div class="chart-container-tech">
+          <canvas id="staffChart"></canvas>
+        </div>
+      </div>
     </div>
-    <div class="panel kpi-card" style="text-align: center; padding: 20px;">
-      <h3 style="margin: 0; color: var(--primary); font-size: 2rem;" id="kpiProjects">-</h3>
-      <p class="muted" style="margin: 5px 0 0 0;">Proyectos (Llenos: <span id="kpiProjectsFull">-</span>)</p>
-    </div>
+
   </div>
 
-  <!-- Formularios Rápidos -->
-  <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
-    <!-- Formulario Rápido de Registro de Alumno -->
-    <details class="panel" style="flex: 1; border: 2px dashed var(--primary); background: #fdfefe; min-width: 300px;">
-      <summary style="padding: 20px; cursor: pointer; font-weight: bold; font-size: 1.25rem; outline: none; border-bottom: 1px solid transparent;">
-        🆕 Registro Rápido de Alumno
-      </summary>
-      <div style="padding: 0 20px 20px 20px; border-top: 1px dashed var(--primary); margin-top: -10px; padding-top: 15px;">
-      <form id="adminAddStudentForm" class="form">
-        <label>Matrícula <input type="text" id="adminMatricula" name="matricula" placeholder="Ej. A01234567" required /></label>
-        <label>Correo <input type="email" id="adminEmail" name="email" placeholder="Ej. alumno@tec.mx" required /></label>
-        <label>Nombre (Opcional) <input type="text" id="adminName" name="full_name" placeholder="Ej. Juan Pérez" /></label>
-        <label style="display: flex; gap: 10px; align-items: center; background: var(--surface-soft); padding: 10px; border-radius: 8px;">
-          <input type="checkbox" id="adminAutoCheckin" checked style="width: 18px; height: 18px; margin: 0;" />
-          Aplicar Check-In automático
-        </label>
-        <button type="submit" class="btn-primary" style="margin-top: 15px; width: 100%;">Crear Alumno</button>
-        <div id="adminAddStudentMessage" style="display:none; margin-top: 10px;"></div>
-      </form>
-      </div>
-    </details>
+  <!-- ══════════════════════════════════════════════════════════
+       CHARTS ROW 2 — Análisis Profundo (Barras)
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Análisis Profundo</div>
+  <div class="adm-charts-row cols-2">
 
-    <!-- Formulario de Nuevo Usuario -->
-    <details class="panel" style="flex: 1; border: 2px solid var(--border); background: #ffffff; min-width: 300px;">
-      <summary style="padding: 20px; cursor: pointer; font-weight: bold; font-size: 1.25rem; outline: none;">
-        👥 Nuevo Personal
-      </summary>
-      <div style="padding: 0 20px 20px 20px; border-top: 1px solid var(--border); margin-top: -10px; padding-top: 15px;">
-      <form id="adminAddUserForm" class="form">
-        <label>Correo Electrónico <input type="email" id="userEmail" required /></label>
-        <label>Contraseña <input type="password" id="userPassword" minlength="6" required /></label>
-        <label>Rol 
-          <select id="userRole" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
-            <option value="SOCIO">Socio (ONG)</option>
-            <option value="BECARIO">Becario (Puerta)</option>
-            <option value="ADMIN">Administrador</option>
-          </select>
-        </label>
-        <button type="submit" class="btn-primary" style="margin-top: 15px; width: 100%;">Crear Personal</button>
-        <div id="adminAddUserMessage" style="display:none; margin-top: 10px;"></div>
-      </form>
+    <div class="panel chart-panel" style="flex: 1 1 320px;">
+      <div class="chart-panel-header">
+        <i class="chart-panel-icon green">▲</i>
+        <span class="chart-panel-title">Conversión de Alumnos</span>
       </div>
-    </details>
+      <div class="chart-panel-body">
+        <div class="chart-container-tech" style="height: 340px;">
+          <canvas id="conversionChart"></canvas>
+        </div>
+      </div>
+    </div>
 
-    <!-- Formulario Nuevo Proyecto -->
-    <details class="panel" style="flex: 1 1 100%; border: 2px solid var(--border); background: #ffffff; margin-top: 20px;">
-      <summary style="padding: 20px; cursor: pointer; font-weight: bold; font-size: 1.25rem; outline: none;">
-        🎪 Nuevo Proyecto
-      </summary>
-      <div style="padding: 0 20px 20px 20px; border-top: 1px solid var(--border); margin-top: -10px; padding-top: 15px;">
-      <form id="adminAddProjectForm" class="form" style="display: flex; flex-direction: column; gap: 15px;">
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 2; min-width: 250px; margin: 0;">Nombre del Proyecto <strong style="color:red">*</strong><input type="text" id="projName" required style="margin-top: 5px;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Clave del Programa <input type="text" id="projClave" placeholder="Ej. WA1067" style="margin-top: 5px;" /></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Dueño (Socio) <strong style="color:red">*</strong>
-            <select id="projOwner" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 5px;">
-              <option value="">Cargando socios...</option>
+    <div class="panel chart-panel" style="flex: 2 1 560px;">
+      <div class="chart-panel-header">
+        <i class="chart-panel-icon green">▬</i>
+        <span class="chart-panel-title">Ocupación Global</span>
+        <span class="chart-legend-tag" style="color: #10b981; margin-left: auto;">▲ Libre</span>
+        <span class="chart-legend-tag" style="color: #e11d48; margin-left: 12px;">▼ Saturado</span>
+      </div>
+      <div class="chart-panel-body">
+        <div class="chart-container-tech" style="height: 340px;">
+          <canvas id="occupancyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FORMULARIOS RÁPIDOS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Gestión</div>
+  <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start;">
+
+    <!-- ── Nuevo Personal ── -->
+    <details class="panel adm-accordion" style="flex: 1; min-width: 300px;">
+      <summary>Nuevo Personal</summary>
+      <div class="adm-accordion-body">
+        <form id="adminAddUserForm" class="adm-form">
+          <label>Correo Electrónico
+            <input type="email" id="userEmail" required placeholder="correo@tec.mx" />
+          </label>
+          <label>Contraseña
+            <input type="password" id="userPassword" minlength="6" required placeholder="Mínimo 6 caracteres" />
+          </label>
+          <label>Rol
+            <select id="userRole" required>
+              <option value="SOCIO">Socio (ONG)</option>
+              <option value="BECARIO">Becario (Puerta)</option>
+              <option value="ADMIN">Administrador</option>
             </select>
           </label>
-          <label style="flex: 1; min-width: 80px; margin: 0;">Cupo <strong style="color:red">*</strong><input type="number" id="projCap" min="1" value="20" required style="margin-top: 5px;" /></label>
-        </div>
-
-        <div style="border-top: 1px solid var(--border); margin: 5px 0;"></div>
-        <h3 style="margin: 0; color: var(--primary);">Atributos de la Feria</h3>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 200px; margin: 0;">Periodo <input type="text" id="projPeriodo" placeholder="Ej. Febrero - Junio" style="margin-top: 5px;" /></label>
-          <label style="flex: 2; display: flex; flex-direction: column; min-width: 300px; margin: 0;">Carreras Permitidas 
-            <div style="display: flex; gap: 8px; margin-bottom: 8px; margin-top: 5px; align-items: stretch;">
-              <input type="text" id="projCarreraInput" placeholder="Ej. ITC" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; margin: 0;" />
-              <button type="button" id="btnAddCarrera" style="padding: 0 20px; border-radius: 8px; border: 2px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-weight: bold; transition: all 0.2s; margin: 0; display: flex; align-items: center; justify-content: center;">Añadir</button>
-            </div>
-            <div id="carrerasList" style="display: flex; flex-wrap: wrap; gap: 5px; min-height: 42px; padding: 8px; border: 1px dashed var(--border); border-radius: 8px; background: var(--surface-soft);"></div>
-          </label>
-        </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 200px; margin: 0;">Objetivo del Proyecto <textarea id="projObjetivo" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical; margin-top: 5px;"></textarea></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Actividades a realizar <textarea id="projActividades" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical; margin-top: 5px;"></textarea></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Competencias requeridas <textarea id="projCompetencias" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical; margin-top: 5px;"></textarea></label>
-        </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 150px; margin: 0;">Horario <input type="text" id="projHorario" placeholder="Ej. 8:30 a 13:30 hrs." style="margin-top: 5px;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Modalidad <input type="text" id="projModalidad" placeholder="Ej. Presencial" style="margin-top: 5px;" /></label>
-          <label style="flex: 2; min-width: 200px; margin: 0;">Lugar de trabajo <input type="text" id="projLugar" placeholder="Ej. Av. El Torreón s/n..." style="margin-top: 5px;" /></label>
-        </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 150px; margin: 0;">Duración <input type="text" id="projDuracion" placeholder="Ej. 10 semanas" style="margin-top: 5px;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Horas máx a acreditar <input type="text" id="projHoras" placeholder="Ej. Hasta 120 horas" style="margin-top: 5px;" /></label>
-          <label style="flex: 2; min-width: 200px; margin: 0;">Población que atiende <input type="text" id="projPoblacion" placeholder="Ej. Niñas y niños de 6 a 12 años" style="margin-top: 5px;" /></label>
-        </div>
-        
-        <label style="margin: 0;">Comentarios adicionales <textarea id="projDesc" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical; margin-top: 5px;"></textarea></label>
-
-        <button type="submit" class="btn-primary" style="margin-top: 10px; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 12px;">Crear Proyecto</button>
-        <div id="adminAddProjectMessage" style="display:none; margin-top: 10px;"></div>
-      </form>
+          <button type="submit" class="btn-primary" style="margin-top: 0.5rem; width: 100%; padding: 12px;">
+            Crear Personal
+          </button>
+          <div id="adminAddUserMessage" style="display:none; margin-top: 0.5rem;"></div>
+        </form>
       </div>
     </details>
+
+    <!-- ── Nuevo Proyecto ── -->
+    <details class="panel adm-accordion" style="flex: 1 1 100%;">
+      <summary>Nuevo Proyecto</summary>
+      <div class="adm-accordion-body">
+        <form id="adminAddProjectForm" class="adm-form">
+
+          <div class="adm-form-row">
+            <label style="flex: 2; min-width: 250px;">
+              Nombre del Proyecto <strong style="color:#f43f5e">*</strong>
+              <input type="text" id="projName" required />
+            </label>
+            <label style="flex: 1; min-width: 150px;">
+              Clave del Programa
+              <input type="text" id="projClave" placeholder="Ej. WA1067" />
+            </label>
+            <label style="flex: 1; min-width: 200px;">
+              Dueño (Socio) <strong style="color:#f43f5e">*</strong>
+              <select id="projOwner" required>
+                <option value="">Cargando socios...</option>
+              </select>
+            </label>
+            <label style="flex: 0 0 100px;">
+              Cupo <strong style="color:#f43f5e">*</strong>
+              <input type="number" id="projCap" min="1" value="20" required />
+            </label>
+          </div>
+
+          <hr class="adm-form-divider" />
+          <span class="adm-form-section-title">Atributos de la Feria</span>
+
+          <div class="adm-form-row">
+            <label style="flex: 1; min-width: 200px;">
+              Periodo
+              <input type="text" id="projPeriodo" placeholder="Ej. Febrero – Junio" />
+            </label>
+            <label style="flex: 2; min-width: 300px;">
+              Carreras Permitidas
+              <div class="adm-tags-wrapper">
+                <input type="text" id="projCarreraInput" placeholder="Ej. ITC" class="adm-tags-input" />
+                <button type="button" id="btnAddCarrera" class="btn-primary adm-tags-add-btn">Añadir</button>
+              </div>
+              <div id="carrerasList" class="adm-tags-list"></div>
+            </label>
+          </div>
+
+          <div class="adm-form-row">
+            <label style="flex: 1; min-width: 200px;">
+              Objetivo del Proyecto
+              <textarea id="projObjetivo" rows="3"></textarea>
+            </label>
+            <label style="flex: 1; min-width: 200px;">
+              Actividades a Realizar
+              <textarea id="projActividades" rows="3"></textarea>
+            </label>
+            <label style="flex: 1; min-width: 200px;">
+              Competencias Requeridas
+              <textarea id="projCompetencias" rows="3"></textarea>
+            </label>
+          </div>
+
+          <div class="adm-form-row">
+            <label style="flex: 1; min-width: 150px;">
+              Horario
+              <input type="text" id="projHorario" placeholder="Ej. 8:30 a 13:30 hrs." />
+            </label>
+            <label style="flex: 1; min-width: 150px;">
+              Modalidad
+              <input type="text" id="projModalidad" placeholder="Ej. Presencial" />
+            </label>
+            <label style="flex: 2; min-width: 200px;">
+              Lugar de Trabajo
+              <input type="text" id="projLugar" placeholder="Ej. Av. El Torreón s/n..." />
+            </label>
+          </div>
+
+          <div class="adm-form-row">
+            <label style="flex: 1; min-width: 150px;">
+              Duración
+              <input type="text" id="projDuracion" placeholder="Ej. 10 semanas" />
+            </label>
+            <label style="flex: 1; min-width: 150px;">
+              Horas máx a acreditar
+              <input type="text" id="projHoras" placeholder="Ej. Hasta 120 horas" />
+            </label>
+            <label style="flex: 2; min-width: 200px;">
+              Población que atiende
+              <input type="text" id="projPoblacion" placeholder="Ej. Niñas y niños de 6 a 12 años" />
+            </label>
+          </div>
+
+          <label>
+            Comentarios adicionales
+            <textarea id="projDesc" rows="2"></textarea>
+          </label>
+
+          <button type="submit" class="btn-primary"
+            style="margin-top: 0.5rem; padding: 14px; font-size: 1rem; border-radius: 10px; width: 100%;">
+            Crear Proyecto
+          </button>
+          <div id="adminAddProjectMessage" style="display:none; margin-top: 0.5rem;"></div>
+
+        </form>
+      </div>
+    </details>
+
   </div>
 
-  <!-- Tabla de Proyectos -->
-  <div class="panel" style="margin-top: 20px;">
-    <div class="panel-header">
-      <h2>Ocupación de Proyectos en Vivo</h2>
+  <!-- ══════════════════════════════════════════════════════════
+       TABLA DE PROYECTOS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Proyectos</div>
+  <div class="panel" style="padding: 0; overflow: hidden;">
+    <div class="adm-panel-header">
+      <h2>Listado Desglosado de Proyectos</h2>
     </div>
-    <div class="table-responsive" style="overflow-x: auto;">
-      <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <thead style="background: var(--surface-soft); text-align: left;">
+    <div style="overflow-x: auto;">
+      <table class="adm-table">
+        <thead>
           <tr>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Proyecto</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Lugares Ocupados</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Ocupación</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Acciones</th>
+            <th>Proyecto</th>
+            <th>Lugares ocupados</th>
+            <th>Ocupación</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="projectsTableBody">
-          <tr><td colspan="4" style="text-align:center; padding: 20px;">Cargando proyectos...</td></tr>
+          <tr>
+            <td colspan="4" style="text-align:center; padding: 2.5rem; color: #475569;">
+              Cargando proyectos...
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Tabla de Estudiantes -->
-  <div class="panel" style="margin-top: 20px;">
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+  <!-- ══════════════════════════════════════════════════════════
+       TABLA DE ESTUDIANTES
+  ══════════════════════════════════════════════════════════ -->
+  <div class="adm-section-label">Alumnos</div>
+  <div class="panel" style="padding: 0; overflow: hidden;">
+    <div class="adm-panel-header">
       <h2>Todos los Alumnos</h2>
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <input type="text" id="searchStudent" placeholder="Buscar matrícula o correo..." style="padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 250px;" />
-        <button id="btnExportStudents" class="btn-secondary" style="padding: 10px 15px; border-radius: 8px; font-weight: bold; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; display: flex; align-items: center; gap: 5px; cursor: pointer; transition: all 0.2s;">
-          📥 Exportar CSV
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="searchStudent" class="adm-search" placeholder="Buscar matrícula o correo..." />
+        <button id="btnExportStudents" class="btn-secondary"
+          style="padding: 9px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap;">
+          ↓ Exportar CSV
         </button>
       </div>
     </div>
-    <div class="table-responsive" style="overflow-x: auto;">
-      <table class="data-table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-        <thead style="background: var(--surface-soft); text-align: left;">
+    <div style="overflow-x: auto;">
+      <table class="adm-table">
+        <thead>
           <tr>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Matrícula</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Estado</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Proyecto</th>
-            <th style="padding: 10px; border-bottom: 2px solid var(--border);">Acciones</th>
+            <th>Matrícula / Correo</th>
+            <th>Estado</th>
+            <th>Proyecto</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="studentsTableBody">
-          <tr><td colspan="4" style="text-align:center; padding: 20px;">Cargando alumnos...</td></tr>
+          <tr>
+            <td colspan="4" style="text-align:center; padding: 2.5rem; color: #475569;">
+              Cargando alumnos...
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
   </div>
 
 </section>
-  <!-- Modal Editar Proyecto -->
-  <div id="editProjectModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
-    <div class="modal-content" style="background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 900px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-      <button id="closeEditProjectModal" style="position: absolute; top: 15px; right: 20px; border: none; background: transparent; font-size: 28px; cursor: pointer; color: #64748b;">&times;</button>
-      <h2 style="margin-top: 0;">✏️ Editar Proyecto</h2>
-      
-      <form id="adminEditProjectForm" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL: EDITAR PROYECTO
+══════════════════════════════════════════════════════════════ -->
+<div id="editProjectModal" class="adm-modal-backdrop" style="display: none;">
+  <div class="adm-modal">
+
+    <div class="adm-modal-header">
+      <h2>Editar Proyecto</h2>
+      <button id="closeEditProjectModal" class="adm-modal-close">&times;</button>
+    </div>
+
+    <div class="adm-modal-body">
+      <form id="adminEditProjectForm" class="adm-form">
         <input type="hidden" id="editProjId" />
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 2; min-width: 250px; margin: 0;">Nombre del Proyecto <strong style="color:red">*</strong><input type="text" id="editProjName" required style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Clave del Programa <input type="text" id="editProjClave" placeholder="Ej. WA1067" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Dueño (Socio) <strong style="color:red">*</strong>
-            <select id="editProjOwner" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-top: 5px;"></select>
+
+        <div class="adm-form-row">
+          <label style="flex: 2; min-width: 250px;">
+            Nombre del Proyecto <strong style="color:#f43f5e">*</strong>
+            <input type="text" id="editProjName" required />
           </label>
-          <label style="flex: 1; min-width: 80px; margin: 0;">Cupo <strong style="color:red">*</strong><input type="number" id="editProjCap" min="1" required style="margin-top: 5px; width:100%;" /></label>
+          <label style="flex: 1; min-width: 150px;">
+            Clave del Programa
+            <input type="text" id="editProjClave" placeholder="Ej. WA1067" />
+          </label>
+          <label style="flex: 1; min-width: 200px;">
+            Dueño (Socio) <strong style="color:#f43f5e">*</strong>
+            <select id="editProjOwner" required></select>
+          </label>
+          <label style="flex: 0 0 100px;">
+            Cupo <strong style="color:#f43f5e">*</strong>
+            <input type="number" id="editProjCap" min="1" required />
+          </label>
         </div>
 
-        <div style="border-top: 1px solid var(--border); margin: 5px 0;"></div>
-        <h3 style="margin: 0; color: var(--primary);">Atributos de la Feria</h3>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 200px; margin: 0;">Periodo <input type="text" id="editProjPeriodo" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 2; display: flex; flex-direction: column; min-width: 300px; margin: 0;">Carreras Permitidas 
-            <div style="display: flex; gap: 8px; margin-bottom: 8px; margin-top: 5px; align-items: stretch;">
-              <input type="text" id="editProjCarreraInput" placeholder="Ej. ITC" style="flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin: 0;" />
-              <button type="button" id="btnEditAddCarrera" style="padding: 0 20px; border-radius: 8px; border: 2px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-weight: bold; margin: 0; display: flex; align-items: center; justify-content: center;">Añadir</button>
+        <hr class="adm-form-divider" />
+        <span class="adm-form-section-title">Atributos de la Feria</span>
+
+        <div class="adm-form-row">
+          <label style="flex: 1; min-width: 200px;">
+            Periodo
+            <input type="text" id="editProjPeriodo" />
+          </label>
+          <label style="flex: 2; min-width: 300px;">
+            Carreras Permitidas
+            <div class="adm-tags-wrapper">
+              <input type="text" id="editProjCarreraInput" placeholder="Ej. ITC" class="adm-tags-input" />
+              <button type="button" id="btnEditAddCarrera" class="btn-primary adm-tags-add-btn">Añadir</button>
             </div>
-            <div id="editCarrerasList" style="display: flex; flex-wrap: wrap; gap: 5px; min-height: 42px; padding: 8px; border: 1px dashed var(--border); border-radius: 8px; background: var(--surface-soft);"></div>
+            <div id="editCarrerasList" class="adm-tags-list"></div>
           </label>
         </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 200px; margin: 0;">Objetivo del Proyecto <textarea id="editProjObjetivo" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); resize: vertical; margin-top: 5px;"></textarea></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Actividades a realizar <textarea id="editProjActividades" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); resize: vertical; margin-top: 5px;"></textarea></label>
-          <label style="flex: 1; min-width: 200px; margin: 0;">Competencias requeridas <textarea id="editProjCompetencias" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); resize: vertical; margin-top: 5px;"></textarea></label>
-        </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 150px; margin: 0;">Horario <input type="text" id="editProjHorario" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Modalidad <input type="text" id="editProjModalidad" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 2; min-width: 200px; margin: 0;">Lugar de trabajo <input type="text" id="editProjLugar" style="margin-top: 5px; width:100%;" /></label>
-        </div>
-        
-        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-          <label style="flex: 1; min-width: 150px; margin: 0;">Duración <input type="text" id="editProjDuracion" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 1; min-width: 150px; margin: 0;">Horas máx a acreditar <input type="text" id="editProjHoras" style="margin-top: 5px; width:100%;" /></label>
-          <label style="flex: 2; min-width: 200px; margin: 0;">Población que atiende <input type="text" id="editProjPoblacion" style="margin-top: 5px; width:100%;" /></label>
-        </div>
-        
-        <label style="margin: 0;">Comentarios adicionales <textarea id="editProjDesc" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); resize: vertical; margin-top: 5px;"></textarea></label>
 
-        <button type="submit" class="btn-primary" style="margin-top: 10px; padding: 15px; font-size: 1.1rem; border-radius: 12px; width: 100%;">Guardar Cambios</button>
-        <div id="adminEditProjectMessage" style="display:none; margin-top: 10px;"></div>
+        <div class="adm-form-row">
+          <label style="flex: 1; min-width: 200px;">
+            Objetivo del Proyecto
+            <textarea id="editProjObjetivo" rows="3"></textarea>
+          </label>
+          <label style="flex: 1; min-width: 200px;">
+            Actividades a Realizar
+            <textarea id="editProjActividades" rows="3"></textarea>
+          </label>
+          <label style="flex: 1; min-width: 200px;">
+            Competencias Requeridas
+            <textarea id="editProjCompetencias" rows="3"></textarea>
+          </label>
+        </div>
+
+        <div class="adm-form-row">
+          <label style="flex: 1; min-width: 150px;">
+            Horario
+            <input type="text" id="editProjHorario" />
+          </label>
+          <label style="flex: 1; min-width: 150px;">
+            Modalidad
+            <input type="text" id="editProjModalidad" />
+          </label>
+          <label style="flex: 2; min-width: 200px;">
+            Lugar de Trabajo
+            <input type="text" id="editProjLugar" />
+          </label>
+        </div>
+
+        <div class="adm-form-row">
+          <label style="flex: 1; min-width: 150px;">
+            Duración
+            <input type="text" id="editProjDuracion" />
+          </label>
+          <label style="flex: 1; min-width: 150px;">
+            Horas máx a acreditar
+            <input type="text" id="editProjHoras" />
+          </label>
+          <label style="flex: 2; min-width: 200px;">
+            Población que atiende
+            <input type="text" id="editProjPoblacion" />
+          </label>
+        </div>
+
+        <label>
+          Comentarios adicionales
+          <textarea id="editProjDesc" rows="2"></textarea>
+        </label>
+
+        <button type="submit" class="btn-primary"
+          style="margin-top: 0.5rem; padding: 14px; font-size: 1rem; border-radius: 10px; width: 100%;">
+          Guardar Cambios
+        </button>
+        <div id="adminEditProjectMessage" style="display:none; margin-top: 0.5rem;"></div>
+
       </form>
     </div>
+
   </div>
+</div>
 
 {% endblock %}
 
 {% block scripts %}
-<script type="module" src="{{ url_for('static', path='js/admin.js') }}?v=10"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="{{ url_for('static', path='js/admin.js') }}?v=15"></script>
 {% endblock %}

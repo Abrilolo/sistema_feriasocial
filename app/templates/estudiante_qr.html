@@ -1,211 +1,108 @@
 {% extends "base.html" %}
 
-{% block title %}Acceso Estudiante - Feria Servicio Social{% endblock %}
+{% block title %}Acceso Estudiante — Feria Social{% endblock %}
+{% block body_class %}est-student-page{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/estudiante.css') }}?v=1" />
+{% endblock %}
 
 {% block content %}
-<div class="page-center">
-  <div class="card fade-in-up" style="max-width: 480px; text-align: center;">
-    <div class="section-logo-wrap">
-      <img
-        src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
-        alt="Servicio Social"
-        class="section-logo"
-      />
-    </div>
+<div class="est-unified{% if is_authenticated %} est-wide{% endif %}">
 
-    <h1>Acceso Estudiante</h1>
+  <!-- ══ COLUMNA IZQUIERDA: Branding ══ -->
+  <div class="est-brand">
+    <div class="est-brand-top">
+      <img src="{{ url_for('static', path='img/logo-servicio-social.png') }}" alt="Servicio Social"
+        class="est-brand-logo" onerror="this.style.display='none';" />
+      <span class="est-brand-eyebrow">Tecnológico de Monterrey</span>
+      <h2 class="est-brand-heading">Feria de<br>Servicio Social</h2>
+      <p class="est-brand-desc">Conectamos a estudiantes del Tec con organizaciones sociales que transforman
+        comunidades. Encuentra tu proyecto y genera impacto real.</p>
+      <div class="est-brand-features">
+        <div class="est-feature"><span class="est-feature-dot"></span>Proyectos con organizaciones verificadas</div>
+        <div class="est-feature"><span class="est-feature-dot"></span>Registro con código QR en tiempo real</div>
+        <div class="est-feature"><span class="est-feature-dot"></span>Acceso exclusivo con correo @tec.mx</div>
+      </div>
+    </div>
+    <div class="est-brand-bottom">Febrero – Junio 2026 · Campus Monterrey</div>
+  </div>
+
+  <!-- ══ COLUMNA DERECHA: Acción ══ -->
+  <div class="est-form-col">
 
     {% if not is_authenticated %}
-    {# ========== VISTA: NO AUTENTICADO ========== #}
-    <p class="muted">Inicia sesión con tu cuenta institucional para acceder a la feria.</p>
+    <!-- Vista: No autenticado -->
+    <span class="est-section-label">Portal de acceso</span>
+    <h1 class="est-form-title">Acceso Estudiante</h1>
+    <p class="est-form-subtitle">Inicia sesión con tu cuenta institucional para continuar.</p>
 
-    <div style="margin-top: 30px;">
-      <a href="/auth/google/login" class="google-btn" id="btnGoogleLogin" style="
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 24px;
-        background: #fff;
-        border: 1px solid #dadce0;
-        border-radius: 4px;
-        color: #3c4043;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        transition: box-shadow 0.2s;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-      " onmouseover="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.2)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.1)';">
-        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Continuar con Google
-      </a>
-    </div>
-
-    <p class="muted" style="margin-top: 20px; font-size: 0.85rem;">
-      Solo se permiten correos @tec.mx
-    </p>
+    <a href="/auth/google/login" class="est-google-btn" id="btnGoogleLogin">
+      <svg class="est-google-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4"
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+        <path fill="#34A853"
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path fill="#FBBC05"
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path fill="#EA4335"
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg>
+      Continuar con Google
+    </a>
+    <p class="est-caption">Solo se permiten correos @tec.mx</p>
 
     {% else %}
-    {# ========== VISTA: AUTENTICADO ========== #}
+    <!-- Vista: Autenticado -->
+    <span class="est-section-label">Te estabamos esperando</span>
+    <h1 class="est-form-title">Hola, {{ (student.full_name or student.matricula).split()[0] }}</h1>
+    <p class="est-form-subtitle">Elige una acción para continuar.</p>
 
-    {# Tarjeta de identidad actual #}
-    <div style="margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+    <div class="est-id-card">
       {% if student.picture_url %}
-      <img src="{{ student.picture_url }}" alt="Foto de perfil" style="
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--primary);
-        margin-bottom: 10px;
-      ">
+      <img src="{{ student.picture_url }}" alt="Foto de perfil" class="est-avatar" />
+      {% else %}
+      <div class="est-avatar-placeholder">{{ (student.full_name or student.matricula or "?")[0].upper() }}</div>
       {% endif %}
-
-      <h3 style="color: var(--primary); margin: 5px 0; font-size: 1.1rem;">
-        {{ student.full_name or student.matricula }}
-      </h3>
-      <p class="muted" style="margin: 2px 0; font-size: 0.9rem;">{{ student.email }}</p>
-      <p style="font-weight: bold; color: var(--success); margin: 2px 0; font-size: 0.95rem;">
-        {{ student.matricula }}
-      </p>
-      {% if student.career %}
-      <p style="color: var(--muted); margin: 2px 0; font-size: 0.85rem;">{{ student.career }}</p>
-      {% endif %}
-
-      <div style="margin-top: 10px;">
-        <span style="
-          display: inline-block;
-          background: #dcfce7;
-          color: #166534;
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        ">
-          ✓ Sesión activa
-        </span>
+      <div class="est-id-info">
+        <div class="est-id-name">{{ student.full_name or student.matricula }}</div>
+        <div class="est-id-email">{{ student.email }}</div>
+        <div class="est-id-matricula">{{ student.matricula }}</div>
+        {% if student.career %}<div class="est-id-career">{{ student.career }}</div>{% endif %}
+        <div class="est-active-badge"><span class="est-active-dot"></span>Sesión activa</div>
       </div>
     </div>
 
-    {# Opciones de acción #}
-    <div style="margin-top: 25px;">
-      <h4 style="color: var(--text); margin-bottom: 15px; font-size: 1rem;">¿Qué deseas hacer?</h4>
-
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        {# Opción principal: Continuar con mi cuenta #}
-        <a href="/acceso-estudiante?section=qr" class="btn-primary" style="
-          background: var(--primary);
-          color: white;
-          text-decoration: none;
-          padding: 14px 20px;
-          border-radius: 8px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        ">
-          <span>📱</span> Generar mi Código QR
-        </a>
-
-        {# Opción secundaria: Ver catálogo #}
-        <a href="/catalogo-proyectos" class="btn-outline" style="
-          text-decoration: none;
-          padding: 12px 20px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          color: var(--text);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        ">
-          <span>📋</span> Ver Catálogo de Proyectos
-        </a>
-
-        {# Opción terciaria: Inscribir proyecto #}
-        <a href="/inscripcion-proyecto" class="btn-outline" style="
-          text-decoration: none;
-          padding: 12px 20px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          color: var(--text);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        ">
-          <span>📝</span> Registrar en Proyecto
-        </a>
-      </div>
+    <div class="est-actions">
+      <button id="btnGenerateQR" class="est-btn-primary">Generar mi Código QR</button>
+      <a href="/catalogo-proyectos" class="est-btn-secondary">Ver Catálogo de Proyectos</a>
+      <a href="/inscripcion-proyecto" class="est-btn-secondary">Registrar en Proyecto</a>
     </div>
 
-    {# Separador #}
-    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border);">
-      <p class="muted" style="font-size: 0.85rem; margin-bottom: 12px;">
-        ¿No eres tú o quieres usar otra cuenta?
-      </p>
-
-      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <a href="/auth/google/switch-account" style="
-          color: var(--muted);
-          text-decoration: none;
-          font-size: 0.85rem;
-          padding: 8px 16px;
-          border-radius: 6px;
-          border: 1px solid var(--border);
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        " onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
-          🔄 Cambiar cuenta
-        </a>
-
-        <a href="/auth/logout" style="
-          color: var(--danger);
-          text-decoration: none;
-          font-size: 0.85rem;
-          padding: 8px 16px;
-          border-radius: 6px;
-          border: 1px solid #fecaca;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-        " onmouseover="this.style.background='#fef2f2';" onmouseout="this.style.background='transparent';">
-          🚪 Cerrar sesión
-        </a>
-      </div>
+    <hr class="est-divider" />
+    <p class="est-switch-caption">No eres tú o quieres usar otra cuenta?</p>
+    <div class="est-bottom-links">
+      <a href="/auth/google/switch-account" class="est-link-ghost">Cambiar cuenta</a>
+      <a href="/auth/logout" class="est-link-danger">Cerrar sesión</a>
     </div>
 
-    {# Sección QR (oculta por defecto, se muestra si hay param ?section=qr) #}
-    <div id="qrSection" style="display: none; margin-top: 30px; padding-top: 25px; border-top: 2px solid var(--primary);">
-      <h3 style="color: var(--primary); margin-bottom: 15px;">Tu Código QR</h3>
-
-      <button id="btnGenerateQR" class="btn-primary" style="width: 100%; margin-bottom: 20px;">
-        📱 Generar mi Código QR
-      </button>
-
-      <div id="qrContainer" style="display:none; animation: fadeIn 0.5s ease-out;">
-        <div id="qrcode" style="display: flex; justify-content: center; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); width: fit-content; margin: 0 auto 15px;"></div>
-
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-          <p style="color: #166534; margin: 0; font-size: 0.9rem; font-weight: 500;">
-            ✅ Tu código está listo
-          </p>
-          <p class="muted" style="margin: 5px 0 0 0; font-size: 0.8rem;">
-            Presenta este QR al staff de entrada. Es válido por 2 horas y de un solo uso.
-          </p>
+    <div id="qrSection" class="est-qr-section">
+      <span class="est-qr-section-label">Pase de entrada</span>
+      <div id="qrContainer" class="est-qr-frame">
+        <div class="est-qr-box">
+          <div id="qrcode"></div>
+        </div>
+        <div class="est-qr-success">
+          <div class="est-qr-success-title">Código listo</div>
+          <div class="est-qr-success-sub">Preséntalo al staff de entrada. Válido 2 horas, un solo uso.</div>
         </div>
       </div>
-
-      <div id="qrError" class="error" style="display:none;"></div>
+      <div id="qrError" class="error" style="display:none; margin-top: 0.75rem;"></div>
     </div>
+
     {% endif %}
   </div>
+
 </div>
 {% endblock %}
 
@@ -215,24 +112,16 @@
 <script type="module">
   import { requestJSON } from "{{ url_for('static', path='js/api.js') }}?v=3";
 
-  // Mostrar sección QR si hay param ?section=qr
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('section') === 'qr') {
-    const qrSection = document.getElementById('qrSection');
-    if (qrSection) {
-      qrSection.style.display = 'block';
-      // Auto-scroll a la sección
-      qrSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
-
   const btnGenerateQR = document.getElementById('btnGenerateQR');
+  const qrSection = document.getElementById('qrSection');
   const qrContainer = document.getElementById('qrContainer');
   const qrError = document.getElementById('qrError');
   const qrcodeDiv = document.getElementById('qrcode');
 
   if (btnGenerateQR) {
     btnGenerateQR.addEventListener('click', async () => {
+      // Show section immediately, hide button, show loading state
+      qrSection.style.display = 'block';
       qrError.style.display = 'none';
       btnGenerateQR.disabled = true;
       btnGenerateQR.textContent = 'Generando...';
@@ -240,80 +129,53 @@
       try {
         const data = await requestJSON('/public/generate-qr', {
           method: 'POST',
-          body: JSON.stringify({
-            career: '{{ student.career or "" }}'
-          })
+          body: JSON.stringify({ career: '{{ student.career or "" }}' })
         });
 
-        qrContainer.style.display = 'block';
+        qrContainer.style.display = 'flex';
         qrcodeDiv.innerHTML = '';
-
-        // El QR contiene un UUID opaco (no la matrícula)
         new QRCode(qrcodeDiv, {
           text: data.qr_data,
-          width: 220,
-          height: 220,
-          colorDark: '#1e293b',
-          colorLight: '#ffffff',
+          width: 200, height: 200,
+          colorDark: '#0f172a', colorLight: '#ffffff',
           correctLevel: QRCode.CorrectLevel.H
         });
 
-        // Ocultar botón y mostrar info de expiración
+        // Hide button permanently once QR is shown
         btnGenerateQR.style.display = 'none';
 
-        // Si hay expires_at, mostrar tiempo restante
         if (data.expires_at) {
-          const expiresAt = new Date(data.expires_at);
-          const now = new Date();
-          const diffMs = expiresAt - now;
-          const diffMins = Math.round(diffMs / 60000);
-
-          if (diffMins > 0) {
-            const infoDiv = document.createElement('div');
-            infoDiv.style.cssText = 'margin-top: 10px; font-size: 0.8rem; color: #64748b;';
-            infoDiv.textContent = `⏱️ Válido por ${diffMins} minutos`;
-            qrContainer.appendChild(infoDiv);
+          const mins = Math.round((new Date(data.expires_at) - new Date()) / 60000);
+          if (mins > 0) {
+            const d = document.createElement('div');
+            d.className = 'est-qr-timer';
+            d.textContent = `Válido por ${mins} minutos`;
+            qrContainer.appendChild(d);
           }
         }
+
+        // Scroll to QR smoothly
+        qrSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
       } catch (err) {
         qrError.textContent = err.message || 'Error al generar el QR. Intenta de nuevo.';
         qrError.style.display = 'block';
         btnGenerateQR.disabled = false;
-        btnGenerateQR.textContent = '📱 Generar mi Código QR';
+        btnGenerateQR.textContent = 'Generar mi Código QR';
       }
     });
   }
 </script>
 {% endif %}
 
-{# Script para detectar sesión activa y actualizar UI dinámicamente #}
 <script type="module">
-  const isAuthenticated = {{ 'true' if is_authenticated else 'false' }};
-
-  // Verificar si hay sesión activa al cargar la página (para la vista no autenticada)
+  const isAuthenticated = "{{ 'true' if is_authenticated else 'false' }}" === "true";
   async function checkSession() {
     try {
-      const response = await fetch('/auth/session', {
-        credentials: 'same-origin'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Si estamos en vista no autenticada pero hay sesión, recargar para mostrar vista autenticada
-        if (data.authenticated && !isAuthenticated) {
-          window.location.reload();
-        }
-      }
-    } catch (e) {
-      // Silenciar errores de red
-    }
+      const r = await fetch('/auth/session', { credentials: 'same-origin' });
+      if (r.ok) { const d = await r.json(); if (d.authenticated && !isAuthenticated) window.location.reload(); }
+    } catch (e) { }
   }
-
-  // Verificar sesión al cargar
-  if (!isAuthenticated) {
-    checkSession();
-  }
+  if (!isAuthenticated) checkSession();
 </script>
 {% endblock %}

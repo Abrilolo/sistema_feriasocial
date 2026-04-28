@@ -1,41 +1,149 @@
 {% extends "base.html" %}
 
-{% block title %}Registro Público{% endblock %}
+{% block title %}Registro de Proyecto — Feria Social{% endblock %}
+{% block body_class %}est-student-page{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/estudiante.css') }}?v=1" />
+{% endblock %}
 
 {% block content %}
-<div class="page-center">
-  <div class="card fade-in-up">
-    <div class="section-logo-wrap">
+<div class="est-unified est-wide">
+
+  <!-- ══ COLUMNA IZQUIERDA: Branding ══ -->
+  <div class="est-brand">
+    <div class="est-brand-top">
       <img
         src="{{ url_for('static', path='img/logo-servicio-social.png') }}"
         alt="Servicio Social"
-        class="section-logo"
+        class="est-brand-logo"
+        onerror="this.style.display='none';"
       />
-    </div>
-
-    <h1>Registro de proyecto</h1>
-    <div style="margin-bottom: 20px; padding: 10px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border);">
-      <p style="margin-bottom: 5px;"><strong>Hola, {{ student.full_name or student.matricula }}</strong></p>
-      <p class="muted" style="font-size: 0.9rem;">{{ student.email }} | {{ student.matricula }}</p>
-    </div>
-
-    <p class="muted">
-      Ingresa el código temporal proporcionado por el socio formador para registrarte en su proyecto.
-    </p>
-
-    <form id="registroForm" class="form">
-      <div>
-        <label for="codigo">Código temporal del Proyecto</label>
-        <input type="text" id="codigo" name="codigo" placeholder="Ingresa el código de 6 caracteres" required />
+      <span class="est-brand-eyebrow">Tecnológico de Monterrey</span>
+      <h2 class="est-brand-heading">Registro<br>de Proyecto</h2>
+      <p class="est-brand-desc">Ingresa el código temporal que te proporcionó el socio formador en su stand para confirmar tu lugar en el proyecto.</p>
+      <div class="est-brand-features">
+        <div class="est-feature"><span class="est-feature-dot"></span>Código de 6 caracteres entregado en el stand</div>
+        <div class="est-feature"><span class="est-feature-dot"></span>Cada código es de un solo uso</div>
+        <div class="est-feature"><span class="est-feature-dot"></span>Tu lugar queda confirmado al instante</div>
       </div>
-
-      <div id="registroError" class="error" style="display:none;"></div>
-      <div id="registroSuccess" class="success" style="display:none;"></div>
-
-      <button type="submit">Confirmar Registro</button>
-    </form>
+    </div>
+    <div class="est-brand-bottom">Febrero – Junio 2026 · Campus Monterrey</div>
   </div>
+
+  <!-- ══ COLUMNA DERECHA: Formulario ══ -->
+  <div class="est-form-col">
+
+    <span class="est-section-label">Inscripción al evento</span>
+    <h1 class="est-form-title">Confirmar Registro</h1>
+    <p class="est-form-subtitle">Ingresa el código del socio formador para reservar tu lugar.</p>
+
+    <!-- Tarjeta de identidad -->
+    <div class="est-id-card">
+      <div class="est-avatar-placeholder">
+        {{ (student.full_name or student.matricula or "?")[0].upper() }}
+      </div>
+      <div class="est-id-info">
+        <div class="est-id-name">{{ student.full_name or student.matricula }}</div>
+        <div class="est-id-email">{{ student.email }}</div>
+        <div class="est-id-matricula">{{ student.matricula }}</div>
+        {% if student.career %}<div class="est-id-career">{{ student.career }}</div>{% endif %}
+        <div class="est-active-badge"><span class="est-active-dot"></span>Sesión activa</div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form id="registroForm">
+
+      <label class="reg-label" for="codigo">Código temporal del proyecto</label>
+      <input
+        type="text"
+        id="codigo"
+        name="codigo"
+        class="reg-input"
+        placeholder="Ingresa el código de 6 caracteres"
+        maxlength="6"
+        autocomplete="off"
+        autocapitalize="characters"
+        required
+      />
+
+      <div id="registroError" class="reg-feedback reg-feedback--error" style="display:none;"></div>
+      <div id="registroSuccess" class="reg-feedback reg-feedback--success" style="display:none;"></div>
+
+      <button type="submit" class="est-btn-primary" style="margin-top: 1.1rem;">
+        Confirmar Registro
+      </button>
+
+    </form>
+
+    <hr class="est-divider" style="margin-top: 1.5rem;" />
+    <div class="est-bottom-links">
+      <a href="/acceso-estudiante" class="est-link-ghost">Volver al inicio</a>
+      <a href="/catalogo-proyectos" class="est-link-ghost">Ver catálogo</a>
+    </div>
+
+  </div>
+
 </div>
+
+<style>
+.reg-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+.reg-input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  transition: all 0.18s;
+  box-sizing: border-box;
+}
+.reg-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.reg-input::placeholder {
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+  text-transform: none;
+}
+.reg-feedback {
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+.reg-feedback--error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #e11d48;
+}
+.reg-feedback--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+</style>
 {% endblock %}
 
 {% block scripts %}

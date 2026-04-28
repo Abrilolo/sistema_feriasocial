@@ -7,6 +7,215 @@ let allProjectsFull = [];
 let carrerasArr = [];
 let editCarrerasArr = [];
 
+let checkinChartInstance = null;
+let occupancyChartInstance = null;
+let conversionChartInstance = null;
+let qrChartInstance = null;
+let staffChartInstance = null;
+
+function renderAdminCharts(m, occupancyData) {
+  if (!window.Chart) return;
+
+  Chart.defaults.color = '#94a3b8'; // text-muted
+  Chart.defaults.font.family = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+
+  // 1. Donut Chart (Check-ins)
+  const ctxCheckin = document.getElementById('checkinChart');
+  if (ctxCheckin) {
+    if (checkinChartInstance) checkinChartInstance.destroy();
+
+    // Excluir a los que ya hicieron checkin para ver los faltantes
+    const notCheckedIn = Math.max(0, m.students.total - m.operations.checkins);
+
+    checkinChartInstance = new Chart(ctxCheckin, {
+      type: 'doughnut',
+      data: {
+        labels: ['Check-In OK', 'Pendientes'],
+        datasets: [{
+          data: [m.operations.checkins, notCheckedIn],
+          backgroundColor: ['#10b981', '#1e293b'], // emerald-500, surface
+          borderColor: '#0f172a', // bg oscuro
+          borderWidth: 2,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 20 } }
+        }
+      }
+    });
+  }
+
+  // 2. Bar Chart Heatmap (Ocupación)
+  const ctxOccupancy = document.getElementById('occupancyChart');
+  if (ctxOccupancy) {
+    if (occupancyChartInstance) occupancyChartInstance.destroy();
+
+    const sortedOccupancy = [...occupancyData].sort((a, b) => b.occupancy_percent - a.occupancy_percent);
+    const labels = sortedOccupancy.map(p => p.name.length > 25 ? p.name.substring(0, 25) + '...' : p.name);
+    const dataValues = sortedOccupancy.map(p => p.occupancy_percent);
+
+    // Colores tipo Heatmap
+    const backgroundColors = dataValues.map(pct => {
+      if (pct >= 100) return 'rgba(225, 29, 72, 0.9)'; // saturado -> rose-600
+      if (pct >= 75) return 'rgba(245, 158, 11, 0.9)'; // advertencia -> amber-500
+      return 'rgba(16, 185, 129, 0.9)'; // libre -> emerald-500
+    });
+
+    occupancyChartInstance = new Chart(ctxOccupancy, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Ocupación',
+          data: dataValues,
+          backgroundColor: backgroundColors,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: Math.max(100, Math.max(...(dataValues.length ? dataValues : [0]))),
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { callback: function (value) { return value + "%"; } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { display: false } // Ocultar textos largos en el eje X, se leen en el tooltip
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return "Ocupación: " + context.raw + "%";
+              },
+              afterLabel: function (context) {
+                const projectNode = sortedOccupancy[context.dataIndex];
+                if (projectNode) {
+                  return `Lugares: ${projectNode.taken_slots} inscritos / ${projectNode.capacity} cupo\nDisponibles: ${projectNode.remaining_slots} asientos`;
+                }
+                return "";
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 3. Conversion Funnel (Bar horizontal)
+  const ctxConversion = document.getElementById('conversionChart');
+  if (ctxConversion) {
+    if (conversionChartInstance) conversionChartInstance.destroy();
+
+    conversionChartInstance = new Chart(ctxConversion, {
+      type: 'bar',
+      data: {
+        labels: ['Estudiantes Totales', 'Con Check-in', 'Registrados (Stand)'],
+        datasets: [{
+          label: 'Alumnos',
+          data: [m.students.total, m.operations.checkins, m.operations.registrations],
+          backgroundColor: ['#64748b', '#0ea5e9', '#10b981'], // slate-500, sky-500, emerald-500
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y', // Hace la gráfica horizontal
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { grid: { display: false }, ticks: { color: '#f8fafc' } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // 4. QR Codes (Doughnut)
+  const ctxQR = document.getElementById('qrChart');
+  if (ctxQR) {
+    if (qrChartInstance) qrChartInstance.destroy();
+
+    qrChartInstance = new Chart(ctxQR, {
+      type: 'doughnut',
+      data: {
+        labels: ['Usados', 'Activos', 'Expirados'],
+        datasets: [{
+          data: [m.temp_codes.used, m.temp_codes.active, m.temp_codes.expired],
+          backgroundColor: ['#10b981', '#f59e0b', '#e11d48'], // emerald, amber, rose
+          borderColor: '#0f172a',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#f8fafc', padding: 15 } },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const raw = context.raw;
+                const total = m.temp_codes.used + m.temp_codes.active + m.temp_codes.expired;
+                const pct = total > 0 ? Math.round((raw / total) * 100) : 0;
+                return ` ${context.label}: ${raw} boletos (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 5. Staff Distribution (PolarArea o Doughnut)
+  const ctxStaff = document.getElementById('staffChart');
+  if (ctxStaff) {
+    if (staffChartInstance) staffChartInstance.destroy();
+
+    staffChartInstance = new Chart(ctxStaff, {
+      type: 'polarArea',
+      data: {
+        labels: ['Socios (ONG)', 'Becarios (Puerta)', 'Administradores'],
+        datasets: [{
+          data: [m.users.socios, m.users.becarios, m.users.admins],
+          backgroundColor: [
+            'rgba(14, 165, 233, 0.7)', // sky
+            'rgba(168, 85, 247, 0.7)', // purple
+            'rgba(244, 63, 94, 0.7)'   // rose
+          ],
+          borderColor: '#0f172a',
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            ticks: { display: false }
+          }
+        },
+        plugins: {
+          legend: { position: 'right', labels: { color: '#f8fafc' } }
+        }
+      }
+    });
+  }
+}
+
 async function loadAdminMetrics() {
   try {
     const data = await requestJSON("/admin/metrics", { headers: getAuthHeaders() });
@@ -16,6 +225,9 @@ async function loadAdminMetrics() {
     document.getElementById("kpiRegistrations").textContent = m.operations.registrations;
     document.getElementById("kpiProjects").textContent = m.projects.total;
     document.getElementById("kpiProjectsFull").textContent = m.projects.full;
+
+    // Renderizar Gráficas
+    renderAdminCharts(m, data.project_occupancy);
 
     const tbody = document.getElementById("projectsTableBody");
     tbody.innerHTML = "";
@@ -44,7 +256,7 @@ async function loadAdminMetrics() {
       tr.innerHTML = `
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">
           <strong>${safeName}</strong>
-          ${!p.is_active ? badgeLabel("Inactivo", "muted") : ""}
+          ${!p.is_active ? badgeLabel(false, "Activo", "Inactivo") : ""}
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safeTaken} / ${safeCapacity}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safePct}% ${barHtml}</td>
@@ -113,9 +325,9 @@ function renderStudentsTable(studentsList) {
     const safeEmail = escapeHtml(s.email);
     const safeProjectName = s.project ? escapeHtml(s.project.name) : null;
 
-    let statusHtml = s.has_checkin ? badgeLabel("Check-In", "success") : badgeLabel("Sin Check-In", "muted");
+    let statusHtml = badgeLabel(s.has_checkin, "Check-In", "Sin Check-In");
     if (s.is_registered) {
-      statusHtml += " " + badgeLabel("Registrado", "primary");
+      statusHtml += " " + badgeLabel(true, "Registrado");
     }
 
     let actionHtml = "";
@@ -138,7 +350,7 @@ function renderStudentsTable(studentsList) {
 
   document.querySelectorAll(".btn-cancel-reg").forEach(btn => {
     btn.addEventListener("click", async (e) => {
-      if(!confirm("¿Seguro que deseas anular este registro? El alumno perderá su lugar en el proyecto y el código quedará quemado.")) return;
+      if (!confirm("¿Seguro que deseas anular este registro? El alumno perderá su lugar en el proyecto y el código quedará quemado.")) return;
       const regId = e.target.dataset.id;
       try {
         await requestJSON(`/admin/registrations/${regId}/cancel`, { method: "PATCH", headers: getAuthHeaders() });
@@ -156,10 +368,10 @@ async function loadUsersForDropdown() {
     const data = await requestJSON("/admin/users", { headers: getAuthHeaders() });
     const ownerSelect = document.getElementById("projOwner");
     const editOwnerSelect = document.getElementById("editProjOwner");
-    
+
     const validUsers = data.users.filter(u => u.role === "SOCIO" || u.role === "ADMIN");
 
-    if(ownerSelect) {
+    if (ownerSelect) {
       ownerSelect.innerHTML = '<option value="">Selecciona un dueño...</option>';
       validUsers.forEach(u => {
         const opt = document.createElement("option");
@@ -169,7 +381,7 @@ async function loadUsersForDropdown() {
         ownerSelect.appendChild(opt);
       });
     }
-    if(editOwnerSelect) {
+    if (editOwnerSelect) {
       editOwnerSelect.innerHTML = '<option value="">Selecciona un dueño...</option>';
       validUsers.forEach(u => {
         const opt = document.createElement("option");
@@ -191,7 +403,7 @@ async function loadAllProjectsFull() {
     if (data && data.projects) {
       allProjectsFull = data.projects;
     }
-  } catch(err) {
+  } catch (err) {
     console.error("Error loading full projects:", err);
   }
 }
@@ -199,7 +411,7 @@ async function loadAllProjectsFull() {
 // Open Edit Modal
 function openEditProjectModal(id) {
   const proj = allProjectsFull.find(p => p.id === id);
-  if(!proj) {
+  if (!proj) {
     alert("No se cargaron los detalles del proyecto correctamente.");
     return;
   }
@@ -243,11 +455,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Filtro de búsqueda
     const searchInput = document.getElementById("searchStudent");
-    if(searchInput) {
+    if (searchInput) {
       searchInput.addEventListener("input", (e) => {
         const term = e.target.value.toLowerCase().trim();
-        const filtered = allStudents.filter(s => 
-          s.matricula.toLowerCase().includes(term) || 
+        const filtered = allStudents.filter(s =>
+          s.matricula.toLowerCase().includes(term) ||
           s.email.toLowerCase().includes(term)
         );
         renderStudentsTable(filtered);
@@ -256,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Exportar CSV
     const btnExportStudents = document.getElementById("btnExportStudents");
-    if(btnExportStudents) {
+    if (btnExportStudents) {
       btnExportStudents.addEventListener("click", () => {
         if (allStudents.length === 0) {
           alert("No hay alumnos para exportar.");
@@ -280,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", `Alumnos_FeriaSocial_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute("download", `Alumnos_FeriaSocial_${new Date().toISOString().slice(0, 10)}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
