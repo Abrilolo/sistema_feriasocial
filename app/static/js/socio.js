@@ -1,8 +1,22 @@
 import { requestJSON, escapeHtml } from './api.js';
-import { showMessage, hideMessage, safeShow, safeHide, formatDate, badgeLabel } from './ui.js';
+import { formatDate } from './ui.js';
 import { getAuthHeaders } from './auth.js';
 
-// Configuración premium para Chart.js
+// ── Error helpers (preserve soc-error class) ──────────────
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideErr(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = '';
+  el.style.display = 'none';
+}
+
+// ── Chart.js config ───────────────────────────────────────
 const CHART_CONFIG = {
   line: {
     type: 'line',
@@ -13,431 +27,359 @@ const CHART_CONFIG = {
         legend: { display: false },
         tooltip: {
           enabled: true,
-          backgroundColor: 'rgba(15, 23, 42, 0.9)',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          padding: 12,
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#f1f5f9',
+          bodyColor: '#94a3b8',
+          padding: 10,
           cornerRadius: 8,
           displayColors: false,
           callbacks: {
             title: () => '',
-            label: (context) => `${context.parsed.y} inscritos`
-          }
-        }
+            label: (ctx) => `${ctx.parsed.y} inscritos`,
+          },
+        },
       },
       scales: {
         x: {
           grid: { display: false, drawBorder: false },
-          ticks: {
-            font: { size: 10, family: 'Inter' },
-            color: '#64748b'
-          }
+          ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#475569' },
         },
         y: {
           border: { display: false },
-          grid: {
-            color: 'rgba(148, 163, 184, 0.1)',
-            drawBorder: false
-          },
-          ticks: {
-            font: { size: 10, family: 'Inter' },
-            color: '#64748b',
-            padding: 8
-          },
-          min: 0
-        }
+          grid: { color: 'rgba(148,163,184,0.06)', drawBorder: false },
+          ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#475569', padding: 6 },
+          min: 0,
+        },
       },
       elements: {
-        line: {
-          tension: 0.4,
-          borderWidth: 3
-        },
-        point: {
-          radius: 0,
-          hitRadius: 20,
-          hoverRadius: 6,
-          hoverBorderWidth: 3
-        }
+        line: { tension: 0.4, borderWidth: 2 },
+        point: { radius: 0, hitRadius: 20, hoverRadius: 5, hoverBorderWidth: 2 },
       },
-      interaction: {
-        intersect: false,
-        mode: 'index'
-      }
-    }
-  }
+      interaction: { intersect: false, mode: 'index' },
+    },
+  },
 };
 
+// ── Load projects ─────────────────────────────────────────
 async function loadSocioProjects() {
-  const container = document.getElementById("projectsContainer");
+  const container = document.getElementById('projectsContainer');
   if (!container) return;
 
-  hideMessage("projectsError");
+  hideErr('projectsError');
   container.innerHTML = `
-    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
-    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
-    <div class="skeleton" style="height: 200px; border-radius: var(--radius-xl);"></div>
+    <div class="soc-skeleton" style="height:200px;"></div>
+    <div class="soc-skeleton" style="height:200px;"></div>
+    <div class="soc-skeleton" style="height:200px;"></div>
   `;
 
   try {
-    const data = await requestJSON("/socio/projects", {
-      method: "GET",
-      headers: {
-        ...getAuthHeaders(),
-      },
+    const data = await requestJSON('/socio/projects', {
+      method: 'GET',
+      headers: { ...getAuthHeaders() },
     });
 
     const projects = data.projects || [];
 
-    // Pintar logo de organización si al menos un proyecto lo tiene
-    const projectWithImage = projects.find(p => p.image_filename);
-    if (projectWithImage) {
-      const orgLogoImg = document.getElementById("orgLogoImg");
-      if (orgLogoImg) {
-        const ts = new Date().getTime();
-        orgLogoImg.src = `/static/img/img_socios/${projectWithImage.image_filename}?t=${ts}`;
-        safeShow("orgLogoContainer", "flex");
-        document.getElementById("orgLogoContainer")?.classList.add("visible");
+    // Logo de organización
+    const withImage = projects.find((p) => p.image_filename);
+    if (withImage) {
+      const img = document.getElementById('orgLogoImg');
+      const wrap = document.getElementById('orgLogoContainer');
+      if (img && wrap) {
+        img.src = `/static/img/img_socios/${withImage.image_filename}?t=${Date.now()}`;
+        wrap.classList.add('visible');
       }
     }
 
     if (projects.length === 0) {
       container.innerHTML = `
-        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: var(--space-12);">
-          <div style="font-size: 3rem; margin-bottom: var(--space-4);">📋</div>
-          <h3 style="color: var(--text);">No tienes proyectos asignados</h3>
-          <p style="color: var(--text-muted); margin-top: var(--space-2);">Contacta al administrador para asignarte proyectos.</p>
+        <div style="grid-column:1/-1;">
+          <div class="soc-empty">
+            <div class="soc-empty-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg>
+            </div>
+            <strong>Sin proyectos asignados</strong>
+            <p>Contacta al administrador para que te asigne proyectos.</p>
+          </div>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = projects
-      .map((project) => {
-        const statusClass = project.is_active ? 'active' : 'inactive';
-        const statusText = project.is_active ? 'Activo' : 'Inactivo';
+    container.innerHTML = projects.map((p) => {
+      const pct = p.capacity > 0 ? Math.round((p.taken_slots / p.capacity) * 100) : 0;
+      const barClass = pct >= 100 ? 'danger' : pct >= 85 ? 'full' : '';
 
-        // Escapar datos dinámicos para prevenir XSS
-        const safeName = escapeHtml(project.name);
-        const safeDesc = escapeHtml(project.description || "Sin descripción disponible");
-        const safeCapacity = escapeHtml(project.capacity);
-        const safeTaken = escapeHtml(project.taken_slots);
-        const safeRemaining = escapeHtml(project.remaining_slots);
-        const safeActiveCodes = escapeHtml(project.active_codes);
+      const safeName    = escapeHtml(p.name);
+      const safeDesc    = escapeHtml(p.description || 'Sin descripción disponible');
+      const statusClass = p.is_active ? 'active' : 'inactive';
+      const statusText  = p.is_active ? 'Activo' : 'Inactivo';
 
-        return `
-          <div class="modern-project-card" data-project-id="${project.id}">
-            <div class="mp-top">
-              <div class="mp-info">
-                <h3 class="mp-title">${safeName}</h3>
-                <p class="mp-description">${safeDesc}</p>
-
-                <div class="mp-stats-row">
-                  <div class="mp-stat-col">
-                    <span class="mp-stat-icon">👥</span>
-                    <span class="mp-stat-label">Capacidad</span>
-                    <strong class="mp-stat-value">${safeCapacity}</strong>
-                  </div>
-                  <div class="mp-stat-col">
-                    <span class="mp-stat-icon">👤</span>
-                    <span class="mp-stat-label">Ocupados</span>
-                    <strong class="mp-stat-value">${safeTaken}</strong>
-                  </div>
-                  <div class="mp-stat-col">
-                    <span class="mp-stat-icon">🪑</span>
-                    <span class="mp-stat-label">Disponibles</span>
-                    <strong class="mp-stat-value">${safeRemaining}</strong>
-                  </div>
-                  <div class="mp-stat-col">
-                    <span class="mp-stat-icon">🔲</span>
-                    <span class="mp-stat-label">Códigos</span>
-                    <strong class="mp-stat-value">${safeActiveCodes}</strong>
-                  </div>
-                  <div class="mp-stat-col">
-                    <span class="mp-stat-icon">${project.is_active ? '✅' : '⏸️'}</span>
-                    <span class="mp-stat-label">Estado</span>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                  </div>
-                </div>
+      return `
+        <div class="soc-project-card" data-project-id="${p.id}">
+          <div>
+            <div class="soc-card-header">
+              <div>
+                <span class="soc-label">Proyecto</span>
+                <h3 class="soc-card-title">${safeName}</h3>
               </div>
+              <span class="soc-status ${statusClass}">${statusText}</span>
+            </div>
+            <p class="soc-card-desc" style="margin-top:0.5rem;">${safeDesc}</p>
 
-              <div class="mp-graph">
-                <span class="mp-graph-title">Inscripciones</span>
-                <canvas id="miniChart-${project.id}" class="mp-chart-canvas"></canvas>
+            <div class="soc-bar-wrap">
+              <div class="soc-bar-meta">
+                <span>${p.taken_slots} inscritos</span>
+                <span>${pct}%</span>
+              </div>
+              <div class="soc-bar-track">
+                <div class="soc-bar-fill ${barClass}" style="width:${pct}%"></div>
               </div>
             </div>
 
-            <div class="mp-bottom">
-              <button class="open-project-btn btn btn-secondary btn-sm" data-project-id="${project.id}">
-                Ver detalles
-              </button>
+            <div class="soc-stats-row" style="margin-top:1rem;">
+              <div class="soc-stat">
+                <span class="soc-stat-label">Capacidad</span>
+                <strong class="soc-stat-value">${escapeHtml(p.capacity)}</strong>
+              </div>
+              <div class="soc-stat">
+                <span class="soc-stat-label">Ocupados</span>
+                <strong class="soc-stat-value">${escapeHtml(p.taken_slots)}</strong>
+              </div>
+              <div class="soc-stat">
+                <span class="soc-stat-label">Disponibles</span>
+                <strong class="soc-stat-value">${escapeHtml(p.remaining_slots)}</strong>
+              </div>
+              <div class="soc-stat">
+                <span class="soc-stat-label">Codigos</span>
+                <strong class="soc-stat-value">${escapeHtml(p.active_codes)}</strong>
+              </div>
+            </div>
+
+            <div class="soc-mini-chart" style="margin-top:1rem;">
+              <canvas id="miniChart-${p.id}" class="soc-chart-canvas"></canvas>
             </div>
           </div>
-        `;
-      })
-      .join("");
 
-    // Initialize mini charts con configuración premium
-    projects.forEach((project) => {
-      const ctx = document.getElementById("miniChart-" + project.id);
-      if (ctx && window.Chart) {
-        const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
-        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.02)');
+          <div class="soc-card-footer">
+            <button class="open-project-btn soc-btn soc-btn-outline soc-btn-sm" data-project-id="${p.id}">
+              Ver detalles
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
 
-        const maxSlots = Math.max(project.taken_slots, project.capacity, 10);
+    // Mini charts
+    projects.forEach((p) => {
+      const ctx = document.getElementById(`miniChart-${p.id}`);
+      if (!ctx || !window.Chart) return;
 
-        new window.Chart(ctx, {
-          ...CHART_CONFIG.line,
-          data: {
-            labels: ["Lun", "Mar", "Mié", "Jue", "Vie"],
-            datasets: [{
-              data: [
-                Math.floor(project.taken_slots * 0.1),
-                Math.floor(project.taken_slots * 0.3),
-                Math.floor(project.taken_slots * 0.5),
-                Math.floor(project.taken_slots * 0.75),
-                project.taken_slots
-              ],
-              borderColor: "#3b82f6",
-              backgroundColor: gradient,
-              fill: true,
-              borderWidth: 3
-            }]
+      const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 60);
+      grad.addColorStop(0, 'rgba(129,140,248,0.22)');
+      grad.addColorStop(1, 'rgba(129,140,248,0.01)');
+
+      new window.Chart(ctx, {
+        ...CHART_CONFIG.line,
+        data: {
+          labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Hoy'],
+          datasets: [{
+            data: [
+              Math.floor(p.taken_slots * 0.1),
+              Math.floor(p.taken_slots * 0.3),
+              Math.floor(p.taken_slots * 0.55),
+              Math.floor(p.taken_slots * 0.8),
+              p.taken_slots,
+            ],
+            borderColor: '#818cf8',
+            backgroundColor: grad,
+            fill: true,
+          }],
+        },
+        options: {
+          ...CHART_CONFIG.line.options,
+          scales: {
+            ...CHART_CONFIG.line.options.scales,
+            y: { ...CHART_CONFIG.line.options.scales.y, max: Math.max(p.capacity, p.taken_slots, 5) },
           },
-          options: {
-            ...CHART_CONFIG.line.options,
-            scales: {
-              ...CHART_CONFIG.line.options.scales,
-              y: {
-                ...CHART_CONFIG.line.options.scales.y,
-                max: maxSlots
-              }
-            }
-          }
-        });
-      }
+        },
+      });
     });
 
-    // Event listeners para botones
-    document.querySelectorAll(".open-project-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
+    // Click en tarjetas
+    document.querySelectorAll('.open-project-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
         const projectId = btn.dataset.projectId;
-        const currentSelected = localStorage.getItem("selectedProjectId");
-        const detailPanel = document.getElementById("projectDetailPanel");
+        const selected  = localStorage.getItem('selectedProjectId');
+        const detail    = document.getElementById('projectDetailPanel');
 
-        // Toggle logic
-        if (currentSelected === projectId && detailPanel && detailPanel.style.display !== "none") {
-          safeHide("projectDetailPanel");
-          safeHide("generateCodePanel");
-          safeHide("studentsPanel");
-          btn.textContent = "Ver detalles";
-          btn.classList.remove("btn-primary");
-          btn.classList.add("btn-secondary");
-          localStorage.setItem("selectedProjectId", "");
+        if (selected === projectId && detail?.style.display !== 'none') {
+          detail.style.display = 'none';
+          document.getElementById('generateCodePanel').style.display = 'none';
+          document.getElementById('studentsPanel').style.display = 'none';
+          btn.textContent = 'Ver detalles';
+          btn.classList.replace('soc-btn-primary', 'soc-btn-outline');
+          document.querySelector(`.soc-project-card[data-project-id="${projectId}"]`)?.classList.remove('selected');
+          localStorage.setItem('selectedProjectId', '');
           return;
         }
 
-        // Reset other buttons
-        document.querySelectorAll(".open-project-btn").forEach(b => {
-          b.textContent = "Ver detalles";
-          b.classList.remove("btn-primary");
-          b.classList.add("btn-secondary");
+        // Reset todos
+        document.querySelectorAll('.open-project-btn').forEach((b) => {
+          b.textContent = 'Ver detalles';
+          b.classList.replace('soc-btn-primary', 'soc-btn-outline');
         });
+        document.querySelectorAll('.soc-project-card').forEach((c) => c.classList.remove('selected'));
 
-        btn.textContent = "Ocultar detalles";
-        btn.classList.remove("btn-secondary");
-        btn.classList.add("btn-primary");
+        btn.textContent = 'Ocultar detalles';
+        btn.classList.replace('soc-btn-outline', 'soc-btn-primary');
+        btn.closest('.soc-project-card')?.classList.add('selected');
 
-        localStorage.setItem("selectedProjectId", projectId);
+        localStorage.setItem('selectedProjectId', projectId);
         await loadSocioProjectDetail(projectId);
         await loadSocioStudents(projectId);
       });
     });
 
-  } catch (error) {
-    container.innerHTML = "";
-    showMessage("projectsError", error.message);
+  } catch (err) {
+    container.innerHTML = '';
+    showErr('projectsError', err.message);
   }
 }
 
+// ── Project detail ─────────────────────────────────────────
 async function loadSocioProjectDetail(projectId) {
-  hideMessage("detailError");
+  hideErr('detailError');
 
   try {
-    const data = await requestJSON(`/socio/projects/${projectId}`, {
-      method: "GET",
-      headers: {
-        ...getAuthHeaders(),
-      },
+    const data    = await requestJSON(`/socio/projects/${projectId}`, {
+      method: 'GET',
+      headers: { ...getAuthHeaders() },
     });
-
     const project = data.project;
-    safeShow("projectDetailPanel", "block");
-    safeShow("generateCodePanel", "block");
-    safeShow("studentsPanel", "block");
 
-    // Animar aparición
-    setTimeout(() => {
-      document.getElementById("projectDetailPanel")?.classList.add("animate-fade-up");
-    }, 50);
+    document.getElementById('projectDetailPanel').style.display = 'block';
+    document.getElementById('generateCodePanel').style.display  = 'block';
+    document.getElementById('studentsPanel').style.display      = 'block';
 
-    const titleEl = document.getElementById("detailProjectName");
-    if (titleEl) titleEl.textContent = project.name || "Proyecto";
+    document.getElementById('projectDetailPanel').classList.add('soc-fade-up');
 
-    const descEl = document.getElementById("detailProjectDescription");
-    if (descEl) descEl.textContent = project.description || "Sin descripción disponible";
+    const titleEl = document.getElementById('detailProjectName');
+    if (titleEl) titleEl.textContent = project.name || 'Proyecto';
 
-    const capacity = project.capacity ?? 0;
-    const taken = project.taken_slots ?? 0;
+    const descEl = document.getElementById('detailProjectDescription');
+    if (descEl) descEl.textContent = project.description || '';
+
+    const capacity  = project.capacity       ?? 0;
+    const taken     = project.taken_slots    ?? 0;
     const available = project.remaining_slots ?? 0;
 
-    // Update stats con animación
-    animateValue("statCapacity", 0, capacity, 800);
-    animateValue("statTaken", 0, taken, 800);
-    animateValue("statRemaining", 0, available, 800);
+    animateValue('statCapacity',  0, capacity,  800);
+    animateValue('statTaken',     0, taken,      800);
+    animateValue('statRemaining', 0, available,  800);
 
-    // Update gauge
-    const gaugeFill = document.getElementById("gaugeFill");
-    const statTakenGauge = document.getElementById("statTakenGauge");
-    const statCapacityGauge = document.getElementById("statCapacityGauge");
+    const gaugeFill         = document.getElementById('gaugeFill');
+    const statTakenGauge    = document.getElementById('statTakenGauge');
+    const statCapacityGauge = document.getElementById('statCapacityGauge');
 
     if (gaugeFill && statTakenGauge && statCapacityGauge) {
-      let percentage = 0;
-      if (capacity > 0) percentage = Math.min(taken / capacity, 1);
-
-      const offset = 125.66 * (1 - percentage);
-
-      // Pequeña demora para la animación visual
+      const pct = capacity > 0 ? Math.min(taken / capacity, 1) : 0;
       setTimeout(() => {
-        gaugeFill.style.strokeDashoffset = offset;
+        gaugeFill.style.strokeDashoffset = 125.66 * (1 - pct);
+        gaugeFill.style.stroke =
+          pct >= 0.9 ? '#f87171' :
+          pct >= 0.7 ? '#fbbf24' :
+          '#818cf8';
       }, 100);
-
-      // Animar el número
-      animateValue("statTakenGauge", 0, taken, 1000);
+      animateValue('statTakenGauge', 0, taken, 1000);
       statCapacityGauge.textContent = capacity;
-
-      // Cambiar color según ocupación
-      if (percentage >= 0.9) {
-        gaugeFill.style.stroke = '#f43f5e'; // Rojo - casi lleno
-      } else if (percentage >= 0.7) {
-        gaugeFill.style.stroke = '#f59e0b'; // Amarillo - medio lleno
-      } else {
-        gaugeFill.style.stroke = '#ffffff'; // Blanco - normal
-      }
     }
-  } catch (error) {
-    showMessage("detailError", error.message);
+  } catch (err) {
+    showErr('detailError', err.message);
   }
 }
 
-// Helper para animar números
+// ── Animate counter ────────────────────────────────────────
 function animateValue(id, start, end, duration) {
-  const obj = document.getElementById(id);
-  if (!obj) return;
-
-  const range = end - start;
-  const minTimer = 50;
-  let stepTime = Math.abs(Math.floor(duration / range));
-  stepTime = Math.max(stepTime, minTimer);
-
-  let startTime = new Date().getTime();
-  let endTime = startTime + duration;
-  let timer;
-
-  function run() {
-    let now = new Date().getTime();
-    let remaining = Math.max((endTime - now) / duration, 0);
-    let value = Math.round(end - (remaining * range));
-    obj.textContent = value;
-
-    if (value == end) {
-      clearInterval(timer);
-    }
-  }
-
-  timer = setInterval(run, stepTime);
-  run();
+  const el = document.getElementById(id);
+  if (!el) return;
+  const range    = end - start;
+  if (range === 0) { el.textContent = end; return; }
+  const stepTime = Math.max(Math.abs(Math.floor(duration / range)), 50);
+  const endTime  = Date.now() + duration;
+  const timer    = setInterval(() => {
+    const remaining = Math.max((endTime - Date.now()) / duration, 0);
+    const value     = Math.round(end - remaining * range);
+    el.textContent  = value;
+    if (value === end) clearInterval(timer);
+  }, stepTime);
 }
 
+// ── Generate code ──────────────────────────────────────────
 async function generateSocioCode(projectId) {
-  hideMessage("generateCodeError");
+  hideErr('generateCodeError');
 
-  const btn = document.getElementById("quickGenerateCodeBtn");
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<span class="animate-spin">⏳</span> Generando...`;
-  }
-
-  const expiresInMinutes = 10;
+  const btn = document.getElementById('quickGenerateCodeBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando...'; }
 
   try {
-    const data = await requestJSON("/socio/temp-codes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders(),
-      },
-      body: JSON.stringify({
-        project_id: projectId,
-        expires_in_minutes: expiresInMinutes,
-      }),
+    const data = await requestJSON('/socio/temp-codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ project_id: projectId, expires_in_minutes: 10 }),
     });
 
-    const code = data.temp_code?.code || "-";
+    const code      = data.temp_code?.code      || '—';
     const expiresAt = formatDate(data.temp_code?.expires_at);
 
-    safeShow("codeDisplayWrapper", "flex");
-    const codeDisplay = document.getElementById("currentCodeDisplay");
-    if (codeDisplay) {
-      codeDisplay.textContent = code;
-      codeDisplay.classList.add("animate-fade-up");
-    }
+    const wrapper = document.getElementById('codeDisplayWrapper');
+    if (wrapper) wrapper.classList.add('visible');
 
-    const expiryDisplay = document.getElementById("codeExpiryDisplay");
-    if (expiryDisplay) expiryDisplay.textContent = `Expira: ${expiresAt}`;
+    const codeEl = document.getElementById('currentCodeDisplay');
+    if (codeEl) { codeEl.textContent = code; codeEl.classList.add('soc-fade-up'); }
+
+    const expiryEl = document.getElementById('codeExpiryDisplay');
+    if (expiryEl) expiryEl.textContent = `Expira: ${expiresAt}`;
 
     await loadSocioProjectDetail(projectId);
-  } catch (error) {
-    showMessage("generateCodeError", error.message);
+  } catch (err) {
+    showErr('generateCodeError', err.message);
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.innerHTML = `<span>✨</span> Crear Nuevo Código`;
-    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Crear nuevo código'; }
   }
 }
 
+// ── Load students ──────────────────────────────────────────
 async function loadSocioStudents(projectId) {
-  const tbody = document.getElementById("studentsTableBody");
+  const tbody = document.getElementById('studentsTableBody');
   if (!tbody) return;
+  hideErr('studentsError');
 
-  hideMessage("studentsError");
   tbody.innerHTML = `
     <tr>
-      <td colspan="5" style="text-align: center; padding: var(--space-8);">
-        <div class="skeleton" style="height: 20px; width: 80%; margin: 0 auto;"></div>
+      <td colspan="5" style="padding:2rem 1rem;">
+        <div class="soc-skeleton" style="height:16px;width:60%;margin:0 auto;"></div>
       </td>
     </tr>
   `;
 
   try {
-    const data = await requestJSON(`/socio/projects/${projectId}/students`, {
-      method: "GET",
-      headers: {
-        ...getAuthHeaders(),
-      },
+    const data     = await requestJSON(`/socio/projects/${projectId}/students`, {
+      method: 'GET',
+      headers: { ...getAuthHeaders() },
     });
-
     const students = data.students || [];
 
     if (students.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center; padding: var(--space-8);">
-            <div style="color: var(--text-muted);">
-              <div style="font-size: 2rem; margin-bottom: var(--space-3);">👥</div>
-              <p>No hay estudiantes registrados aún.</p>
-              <p style="font-size: var(--text-sm);">Genera un código para que los estudiantes se registren.</p>
+          <td colspan="5">
+            <div class="soc-empty">
+              <div class="soc-empty-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              </div>
+              <strong>Sin estudiantes aún</strong>
+              <p>Genera un código para que los estudiantes se registren.</p>
             </div>
           </td>
         </tr>
@@ -445,174 +387,118 @@ async function loadSocioStudents(projectId) {
       return;
     }
 
-    tbody.innerHTML = students
-      .map((student) => {
-        const statusClass = student.status === 'registered' ? 'badge-ok' : 'badge-warn';
-        // Escapar datos del estudiante para prevenir XSS
-        const safeMatricula = escapeHtml(student.matricula || "-");
-        const safeEmail = escapeHtml(student.email || "-");
-        const safeName = escapeHtml(student.full_name || "-");
-        const safeStatus = escapeHtml(student.status || "-");
-        return `
-          <tr>
-            <td><code>${safeMatricula}</code></td>
-            <td>${safeEmail}</td>
-            <td><strong>${safeName}</strong></td>
-            <td><span class="badge ${statusClass}">${safeStatus}</span></td>
-            <td>${formatDate(student.registered_at)}</td>
-          </tr>
-        `;
-      })
-      .join("");
+    tbody.innerHTML = students.map((s) => {
+      const badgeClass = s.status === 'registered' ? 'soc-badge-ok' : 'soc-badge-pending';
+      return `
+        <tr>
+          <td><code>${escapeHtml(s.matricula || '—')}</code></td>
+          <td>${escapeHtml(s.email || '—')}</td>
+          <td><strong>${escapeHtml(s.full_name || '—')}</strong></td>
+          <td><span class="soc-badge ${badgeClass}">${escapeHtml(s.status || '—')}</span></td>
+          <td>${formatDate(s.registered_at)}</td>
+        </tr>
+      `;
+    }).join('');
 
-  } catch (error) {
-    tbody.innerHTML = "";
-    showMessage("studentsError", error.message);
+  } catch (err) {
+    tbody.innerHTML = '';
+    showErr('studentsError', err.message);
   }
 }
 
+// ── Export CSV ─────────────────────────────────────────────
 function exportSocioStudents(projectId) {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("No hay sesión activa.");
-    return;
-  }
+  const token = localStorage.getItem('token');
+  if (!token) { alert('No hay sesión activa.'); return; }
 
-  const btn = document.getElementById("exportStudentsBtn");
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `⏳ Exportando...`;
-  }
+  const btn = document.getElementById('exportStudentsBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Exportando...'; }
 
   fetch(`/socio/projects/${projectId}/students/export`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
   })
-    .then(async (response) => {
-      if (!response.ok) {
-        let message = "No se pudo exportar el CSV.";
-        try {
-          const data = await response.json();
-          message = data.detail || message;
-        } catch (_) { }
-        throw new Error(message);
+    .then(async (res) => {
+      if (!res.ok) {
+        const d   = await res.json().catch(() => ({}));
+        throw new Error(d.detail || 'No se pudo exportar el CSV.');
       }
-      return response.blob();
+      return res.blob();
     })
     .then((blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `estudiantes_proyecto_${projectId}_${new Date().toISOString().split('T')[0]}.csv`;
+      const url = URL.createObjectURL(blob);
+      const a   = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `estudiantes_${projectId}_${new Date().toISOString().split('T')[0]}.csv`,
+      });
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
-
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = `⬇️ Exportar CSV`;
-      }
+      URL.revokeObjectURL(url);
     })
-    .catch((error) => {
-      showMessage("studentsError", error.message);
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = `⬇️ Exportar CSV`;
-      }
+    .catch((err) => showErr('studentsError', err.message))
+    .finally(() => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Exportar CSV'; }
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Cargar información del usuario
-  requestJSON("/auth/me", { headers: getAuthHeaders() })
-    .then(meData => {
-      localStorage.setItem("user", JSON.stringify(meData));
-      const orgNameSpan = document.getElementById("orgNameSpan");
-      if (orgNameSpan && meData.organization_name) {
-        orgNameSpan.textContent = meData.organization_name;
-      }
+// ── Init ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
 
-      // Actualizar display de rol en header
-      const userRoleDisplay = document.getElementById("userRoleDisplay");
-      if (userRoleDisplay) {
-        userRoleDisplay.textContent = `Socio Formador • ${meData.organization_name || ''}`;
-      }
+  // Datos del usuario
+  requestJSON('/auth/me', { headers: getAuthHeaders() })
+    .then((me) => {
+      localStorage.setItem('user', JSON.stringify(me));
+      const span = document.getElementById('orgNameSpan');
+      if (span && me.organization_name) span.textContent = me.organization_name;
+      const roleEl = document.getElementById('userRoleDisplay');
+      if (roleEl) roleEl.textContent = `Socio Formador · ${me.organization_name || ''}`;
     })
     .catch(() => {
       try {
-        const usr = JSON.parse(localStorage.getItem("user") || "{}");
-        const orgNameSpan = document.getElementById("orgNameSpan");
-        if (orgNameSpan && usr.organization_name) {
-          orgNameSpan.textContent = usr.organization_name;
-        }
-      } catch (e) { }
+        const usr  = JSON.parse(localStorage.getItem('user') || '{}');
+        const span = document.getElementById('orgNameSpan');
+        if (span && usr.organization_name) span.textContent = usr.organization_name;
+      } catch (_) {}
     });
 
-  // Event listeners
-  const quickGenerateCodeBtn = document.getElementById("quickGenerateCodeBtn");
-  const refreshDetailBtn = document.getElementById("refreshDetailBtn");
-  const refreshStudentsBtn = document.getElementById("refreshStudentsBtn");
-  const exportStudentsBtn = document.getElementById("exportStudentsBtn");
+  // Botones
+  document.getElementById('quickGenerateCodeBtn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const id = localStorage.getItem('selectedProjectId');
+    if (!id) { showErr('generateCodeError', 'Primero selecciona un proyecto.'); return; }
+    await generateSocioCode(id);
+  });
 
-  if (quickGenerateCodeBtn) {
-    quickGenerateCodeBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
-      const projectId = localStorage.getItem("selectedProjectId");
-      if (!projectId) {
-        showMessage("generateCodeError", "Primero selecciona un proyecto.");
-        return;
-      }
-      await generateSocioCode(projectId);
-    });
-  }
+  document.getElementById('refreshDetailBtn')?.addEventListener('click', async () => {
+    const id = localStorage.getItem('selectedProjectId');
+    if (id) await loadSocioProjectDetail(id);
+  });
 
-  if (refreshDetailBtn) {
-    refreshDetailBtn.addEventListener("click", async () => {
-      const projectId = localStorage.getItem("selectedProjectId");
-      if (projectId) {
-        await loadSocioProjectDetail(projectId);
-      }
-    });
-  }
+  document.getElementById('refreshStudentsBtn')?.addEventListener('click', async () => {
+    const id = localStorage.getItem('selectedProjectId');
+    if (id) await loadSocioStudents(id);
+  });
 
-  if (refreshStudentsBtn) {
-    refreshStudentsBtn.addEventListener("click", async () => {
-      const projectId = localStorage.getItem("selectedProjectId");
-      if (projectId) {
-        await loadSocioStudents(projectId);
-      }
-    });
-  }
+  document.getElementById('exportStudentsBtn')?.addEventListener('click', () => {
+    const id = localStorage.getItem('selectedProjectId');
+    if (!id) { showErr('studentsError', 'Primero selecciona un proyecto.'); return; }
+    exportSocioStudents(id);
+  });
 
-  if (exportStudentsBtn) {
-    exportStudentsBtn.addEventListener("click", () => {
-      const projectId = localStorage.getItem("selectedProjectId");
-      if (!projectId) {
-        showMessage("studentsError", "Primero selecciona un proyecto.");
-        return;
-      }
-      exportSocioStudents(projectId);
-    });
-  }
-
-  // Cargar proyectos
-  if (document.getElementById("projectsContainer")) {
+  // Cargar proyectos y restaurar estado previo
+  if (document.getElementById('projectsContainer')) {
     loadSocioProjects().then(async () => {
-      const selectedProjectId = localStorage.getItem("selectedProjectId");
-      if (selectedProjectId) {
-        const btn = document.querySelector(`.open-project-btn[data-project-id="${selectedProjectId}"]`);
-        if (btn) {
-          btn.textContent = "Ocultar detalles";
-          btn.classList.remove("btn-secondary");
-          btn.classList.add("btn-primary");
-        }
-
-        await loadSocioProjectDetail(selectedProjectId);
-        await loadSocioStudents(selectedProjectId);
+      const id = localStorage.getItem('selectedProjectId');
+      if (!id) return;
+      const btn = document.querySelector(`.open-project-btn[data-project-id="${id}"]`);
+      if (btn) {
+        btn.textContent = 'Ocultar detalles';
+        btn.classList.replace('soc-btn-outline', 'soc-btn-primary');
+        btn.closest('.soc-project-card')?.classList.add('selected');
       }
+      await loadSocioProjectDetail(id);
+      await loadSocioStudents(id);
     });
   }
 });

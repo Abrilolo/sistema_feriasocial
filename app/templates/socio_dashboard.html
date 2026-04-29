@@ -1,108 +1,125 @@
 {% extends "base.html" %}
 
-{% block title %}Panel Socio{% endblock %}
+{% block title %}Panel Socio Formador{% endblock %}
+{% block body_class %}soc-page{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/socio.css') }}?v=1" />
+{% endblock %}
 
 {% block content %}
-<section class="dashboard">
-  <!-- Header Panel -->
-  <div class="panel socio-header">
-    <div class="header-info">
-      <h1 id="orgNameSpan">Panel de Socio</h1>
-      <p class="header-description">Administra tus proyectos y visualiza el progreso de tus alumnos inscritos.</p>
+<section class="soc">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <div class="soc-header">
+    <div class="soc-header-left">
+      <span class="soc-label">Socio Formador</span>
+      <h1 class="soc-header-org" id="orgNameSpan">Organización</h1>
+      <p class="soc-header-sub">Administra tus proyectos y el progreso de los estudiantes inscritos.</p>
+      <div class="soc-header-badge">Feria en curso</div>
     </div>
-    <div id="orgLogoContainer" class="socio-logo-container">
-      <img id="orgLogoImg" src="" alt="Logo Organización" class="socio-logo" loading="lazy" />
+    <div id="orgLogoContainer" class="soc-logo-wrap">
+      <img id="orgLogoImg" src="" alt="Logo" class="soc-logo" loading="lazy" />
     </div>
   </div>
 
-  <!-- Projects Container -->
-  <div class="panel" id="projectsContainerPanel">
-    <h2>Mis proyectos</h2>
-    <div id="projectsError" class="error" style="display:none;"></div>
-    <div id="projectsContainer" class="project-grid"></div>
-  </div>
-
-  <!-- Project Detail Panel -->
-  <div class="panel project-detail-premium" id="projectDetailPanel" style="display:none;">
-    <div id="detailError" class="error" style="display:none; margin-bottom: var(--space-5);"></div>
-
-    <div class="project-detail-header">
+  <!-- ── PROYECTOS ──────────────────────────────────── -->
+  <div class="soc-panel">
+    <div class="soc-panel-header">
       <div>
-        <h2 id="detailProjectName" class="project-detail-title">Detalle del proyecto</h2>
-        <p id="detailProjectDescription" class="project-detail-description"></p>
-      </div>
-      <div class="project-detail-actions">
-        <button id="refreshDetailBtn" type="button" class="btn-secondary">Actualizar Datos</button>
+        <span class="soc-label">Catálogo</span>
+        <h2 class="soc-panel-title" style="margin-bottom:0;">Mis proyectos</h2>
       </div>
     </div>
-
-    <!-- Gauge Visualization -->
-    <div class="gauge-container">
-      <svg viewBox="0 0 100 50" class="gauge-svg">
-        <path d="M 10 50 A 40 40 0 0 1 90 50" class="gauge-track" />
-        <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" class="gauge-fill" />
-      </svg>
-      <div class="gauge-text">
-        <div id="statTakenGauge" class="gauge-value">0</div>
-        <div class="gauge-label">Inscritos</div>
-        <div class="gauge-subtitle">de <span id="statCapacityGauge">0</span></div>
-      </div>
-    </div>
-
-    <!-- Stats Row -->
-    <div class="inline-stats">
-      <div class="stat-item">
-        <span class="stat-icon">👥</span>
-        <span class="stat-text">Capacidad: <strong id="statCapacity">0</strong></span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-icon">➡️</span>
-        <span class="stat-text">Ocupados: <strong id="statTaken">0</strong></span>
-      </div>
-      <div class="stat-item highlighted">
-        <span class="stat-icon">🪑</span>
-        <span class="stat-text">Disponibles: <strong id="statRemaining">0</strong></span>
-      </div>
-    </div>
+    <div id="projectsError" class="soc-error"></div>
+    <div id="projectsContainer" class="soc-project-grid"></div>
   </div>
 
-  <!-- Generate Code Panel -->
-  <div class="panel generate-code-panel" id="generateCodePanel" style="display:none;">
-    <div class="generate-code-wrapper">
-      <div class="generate-code-left">
-        <h2>Generar código de acceso</h2>
-        <p class="muted">Haz clic para crear un nuevo código temporal (válido por 10 minutos).</p>
-        <button id="quickGenerateCodeBtn" class="btn btn-primary btn-lg">
-          <span>✨</span> Crear Nuevo Código
-        </button>
-        <div id="generateCodeError" class="error" style="display:none;"></div>
+  <!-- ── DETALLE DEL PROYECTO ───────────────────────── -->
+  <div class="soc-panel" id="projectDetailPanel" style="display:none;">
+    <div id="detailError" class="soc-error"></div>
+
+    <div class="soc-detail-header">
+      <div>
+        <span class="soc-label">Proyecto seleccionado</span>
+        <h2 class="soc-detail-title" id="detailProjectName">Detalle</h2>
+        <p class="soc-detail-desc" id="detailProjectDescription"></p>
       </div>
-      <div class="generate-code-right" id="codeDisplayWrapper" style="display:none;">
-        <span class="code-subtitle">Código generado</span>
-        <div class="code-box">
-          <h1 id="currentCodeDisplay" class="code-display">---</h1>
+      <button id="refreshDetailBtn" type="button" class="soc-btn soc-btn-ghost soc-btn-sm">
+        Actualizar
+      </button>
+    </div>
+
+    <!-- Gauge + stats -->
+    <div class="soc-gauge-wrap">
+      <div class="soc-gauge-svg-wrap">
+        <svg viewBox="0 0 100 50" class="soc-gauge-svg">
+          <path d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-track" />
+          <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-fill" />
+        </svg>
+        <div class="soc-gauge-center">
+          <span id="statTakenGauge" class="soc-gauge-num">0</span>
+          <span class="soc-gauge-sub">de <span id="statCapacityGauge">0</span> inscritos</span>
         </div>
-        <p class="code-expiry" id="codeExpiryDisplay"></p>
+      </div>
+
+      <div class="soc-detail-stats">
+        <div class="soc-detail-stat">
+          <span class="soc-detail-stat-label">Capacidad</span>
+          <span class="soc-detail-stat-value" id="statCapacity">0</span>
+        </div>
+        <div class="soc-detail-stat">
+          <span class="soc-detail-stat-label">Ocupados</span>
+          <span class="soc-detail-stat-value" id="statTaken">0</span>
+        </div>
+        <div class="soc-detail-stat">
+          <span class="soc-detail-stat-label">Disponibles</span>
+          <span class="soc-detail-stat-value" id="statRemaining">0</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Students Panel -->
-  <div class="panel students-panel" id="studentsPanel" style="display:none;">
-    <div class="panel-header">
-      <div>
-        <h2>Estudiantes registrados</h2>
-        <p class="panel-subtitle">Lista completa de estudiantes inscritos en este proyecto</p>
+  <!-- ── GENERAR CÓDIGO ─────────────────────────────── -->
+  <div class="soc-panel" id="generateCodePanel" style="display:none;">
+    <span class="soc-label" style="margin-bottom:1.25rem;display:inline-flex;">Acceso</span>
+    <div class="soc-code-layout">
+      <div class="soc-code-left">
+        <h2 class="soc-panel-title" style="margin:0;">Código de acceso</h2>
+        <p class="soc-code-desc">
+          Genera un código temporal que el estudiante ingresa para registrarse en este proyecto.
+          Cada código es válido por 10 minutos y de un solo uso.
+        </p>
+        <button id="quickGenerateCodeBtn" class="soc-btn soc-btn-primary soc-btn-lg" style="align-self:flex-start;">
+          Crear nuevo código
+        </button>
+        <div id="generateCodeError" class="soc-error" style="margin-top:0.75rem;"></div>
       </div>
-      <div class="btn-group">
-        <button id="refreshStudentsBtn" type="button" class="btn btn-secondary btn-sm">Actualizar</button>
-        <button id="exportStudentsBtn" type="button" class="btn btn-success btn-sm">⬇️ Exportar CSV</button>
+
+      <div class="soc-code-right" id="codeDisplayWrapper">
+        <span class="soc-code-chip">Código activo</span>
+        <span class="soc-code-value" id="currentCodeDisplay">—</span>
+        <span class="soc-code-expiry" id="codeExpiryDisplay"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ESTUDIANTES ────────────────────────────────── -->
+  <div class="soc-panel" id="studentsPanel" style="display:none;">
+    <div class="soc-panel-header">
+      <div>
+        <span class="soc-label">Registros</span>
+        <h2 class="soc-panel-title" style="margin-bottom:0;">Estudiantes inscritos</h2>
+      </div>
+      <div class="soc-panel-header-right">
+        <button id="refreshStudentsBtn" type="button" class="soc-btn soc-btn-ghost soc-btn-sm">Actualizar</button>
+        <button id="exportStudentsBtn" type="button" class="soc-btn soc-btn-success soc-btn-sm">Exportar CSV</button>
       </div>
     </div>
 
-    <div id="studentsError" class="error" style="display:none;"></div>
-    <div class="table-wrapper">
-      <table class="elegant-table">
+    <div id="studentsError" class="soc-error"></div>
+    <div class="soc-table-wrap">
+      <table class="soc-table">
         <thead>
           <tr>
             <th>Matrícula</th>
@@ -116,10 +133,11 @@
       </table>
     </div>
   </div>
+
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="{{ url_for('static', path='js/socio.js') }}?v=6"></script>
+<script type="module" src="{{ url_for('static', path='js/socio.js') }}?v=7"></script>
 {% endblock %}
