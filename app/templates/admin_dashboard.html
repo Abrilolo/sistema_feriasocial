@@ -3,452 +3,478 @@
 {% block title %}Centro de Mando — Feria Social{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', path='css/admin_dashboard.css') }}?v=2" />
+<link rel="stylesheet" href="{{ url_for('static', path='css/admin_dashboard.css') }}?v=4" />
 {% endblock %}
+
 {% block body_class %}admin-dark-theme{% endblock %}
 
 {% block content %}
-<section class="adm">
+<div class="adm-layout">
 
-  <!-- ══════════════════════════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════════════════════════ -->
-  <header class="adm-header panel">
-    <div class="adm-header__left">
-      <span class="adm-header__eyebrow">Tecnológico de Monterrey · Feria Social</span>
-      <h1 class="adm-header__title">Panel de Administrador</h1>
-      <p class="adm-header__sub">Supervisión global · métricas en tiempo real · herramientas operativas</p>
-    </div>
-    <div class="adm-live-badge">
-      <span class="adm-live-dot"></span>
-      FERIA EN VIVO
-    </div>
-  </header>
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="adm-sidebar">
+    <div class="adm-sidebar__inner">
 
-  <!-- ══════════════════════════════════════════════════════════
-       KPI CARDS
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Indicadores Clave</div>
-  <div class="adm-kpi-grid">
-
-    <div class="panel kpi-card kpi-blue">
-      <div class="kpi-label">Estudiantes</div>
-      <div class="kpi-number" id="kpiStudents">—</div>
-    </div>
-
-    <div class="panel kpi-card kpi-green">
-      <div class="kpi-label">Check-Ins</div>
-      <div class="kpi-number" id="kpiCheckins">—</div>
-    </div>
-
-    <div class="panel kpi-card kpi-amber">
-      <div class="kpi-label">Registros a Proyectos</div>
-      <div class="kpi-number" id="kpiRegistrations">—</div>
-    </div>
-
-    <div class="panel kpi-card kpi-purple">
-      <div class="kpi-label">Proyectos</div>
-      <div class="kpi-number" id="kpiProjects">—</div>
-      <div class="kpi-sub">Llenos:&nbsp;<span id="kpiProjectsFull">—</span></div>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       CHARTS ROW 1 — Visión Rápida (Donut / Polar)
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Visión Rápida</div>
-  <div class="adm-charts-row cols-3">
-
-    <div class="panel chart-panel">
-      <div class="chart-panel-header">
-        <i class="chart-panel-icon blue">◉</i>
-        <span class="chart-panel-title">Progreso del Evento</span>
+      <div class="adm-sidebar__brand">
+        <span class="adm-sidebar__brand-dot"></span>
+        <span class="adm-sidebar__brand-text">Admin</span>
       </div>
-      <div class="chart-panel-body">
-        <div class="chart-container-tech">
-          <canvas id="checkinChart"></canvas>
+
+      <nav class="adm-nav">
+        <a class="adm-nav__item" data-target="sec-kpis">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="8" width="3" height="7" rx="1" fill="currentColor" opacity=".5"/>
+            <rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor" opacity=".7"/>
+            <rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/>
+          </svg>
+          <span class="adm-nav__label">Indicadores</span>
+        </a>
+        <a class="adm-nav__item" data-target="sec-vision">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M8 2 A6 6 0 0 1 14 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span class="adm-nav__label">Visión Rápida</span>
+        </a>
+        <a class="adm-nav__item" data-target="sec-analisis">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <path d="M2 13 L6 8 L9 11 L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="13" cy="4" r="1.5" fill="currentColor"/>
+          </svg>
+          <span class="adm-nav__label">Análisis</span>
+        </a>
+        <a class="adm-nav__item" data-target="sec-gestion">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          </svg>
+          <span class="adm-nav__label">Gestión</span>
+        </a>
+        <a class="adm-nav__item" data-target="sec-proyectos">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="adm-nav__label">Proyectos</span>
+        </a>
+        <a class="adm-nav__item" data-target="sec-alumnos">
+          <svg class="adm-nav__icon" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="adm-nav__label">Alumnos</span>
+        </a>
+      </nav>
+
+      <div class="adm-sidebar__footer">
+        <div class="adm-live-badge">
+          <span class="adm-live-dot"></span>
+          EN VIVO
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <section class="adm">
+
+    <!-- HEADER -->
+    <header class="adm-header panel">
+      <div class="adm-header__left">
+        <span class="adm-header__eyebrow">Tecnológico de Monterrey · Feria Social</span>
+        <h1 class="adm-header__title">Centro de Mando</h1>
+        <p class="adm-header__sub">Supervisión global · métricas en tiempo real · herramientas operativas</p>
+      </div>
+    </header>
+
+    <!-- ══ KPIs ══ -->
+    <div id="sec-kpis" class="adm-anchor">
+      <div class="adm-section-label">Indicadores Clave</div>
+      <div class="adm-kpi-grid">
+        <div class="panel kpi-card kpi-blue">
+          <div class="kpi-label">Estudiantes</div>
+          <div class="kpi-number" id="kpiStudents">—</div>
+        </div>
+        <div class="panel kpi-card kpi-green">
+          <div class="kpi-label">Check-Ins</div>
+          <div class="kpi-number" id="kpiCheckins">—</div>
+        </div>
+        <div class="panel kpi-card kpi-amber">
+          <div class="kpi-label">Registros a Proyectos</div>
+          <div class="kpi-number" id="kpiRegistrations">—</div>
+        </div>
+        <div class="panel kpi-card kpi-purple">
+          <div class="kpi-label">Proyectos</div>
+          <div class="kpi-number" id="kpiProjects">—</div>
+          <div class="kpi-sub">Llenos:&nbsp;<span id="kpiProjectsFull">—</span></div>
         </div>
       </div>
     </div>
 
-    <div class="panel chart-panel">
-      <div class="chart-panel-header">
-        <i class="chart-panel-icon amber">◈</i>
-        <span class="chart-panel-title">Códigos QR (Pases)</span>
-      </div>
-      <div class="chart-panel-body">
-        <div class="chart-container-tech">
-          <canvas id="qrChart"></canvas>
+    <!-- ══ VISIÓN RÁPIDA ══ -->
+    <div id="sec-vision" class="adm-anchor">
+      <div class="adm-section-label">Visión Rápida</div>
+      <div class="adm-charts-row cols-3">
+        <div class="panel chart-panel">
+          <div class="chart-panel-header">
+            <i class="chart-panel-icon blue">◉</i>
+            <span class="chart-panel-title">Progreso del Evento</span>
+          </div>
+          <div class="chart-panel-body">
+            <div class="chart-container-tech"><canvas id="checkinChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel chart-panel">
+          <div class="chart-panel-header">
+            <i class="chart-panel-icon amber">◈</i>
+            <span class="chart-panel-title">Códigos QR (Pases)</span>
+          </div>
+          <div class="chart-panel-body">
+            <div class="chart-container-tech"><canvas id="qrChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel chart-panel">
+          <div class="chart-panel-header">
+            <i class="chart-panel-icon purple">⬡</i>
+            <span class="chart-panel-title">Personal Desplegado</span>
+          </div>
+          <div class="chart-panel-body">
+            <div class="chart-container-tech"><canvas id="staffChart"></canvas></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="panel chart-panel">
-      <div class="chart-panel-header">
-        <i class="chart-panel-icon purple">⬡</i>
-        <span class="chart-panel-title">Personal Desplegado</span>
-      </div>
-      <div class="chart-panel-body">
-        <div class="chart-container-tech">
-          <canvas id="staffChart"></canvas>
+    <!-- ══ ANÁLISIS ══ -->
+    <div id="sec-analisis" class="adm-anchor">
+      <div class="adm-section-label">Análisis Profundo</div>
+      <div class="adm-charts-row cols-2">
+        <div class="panel chart-panel" style="flex: 1 1 320px;">
+          <div class="chart-panel-header">
+            <i class="chart-panel-icon green">▲</i>
+            <span class="chart-panel-title">Conversión de Alumnos</span>
+          </div>
+          <div class="chart-panel-body">
+            <div class="chart-container-tech" style="height: 340px;"><canvas id="conversionChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel chart-panel" style="flex: 2 1 560px;">
+          <div class="chart-panel-header">
+            <i class="chart-panel-icon green">▬</i>
+            <span class="chart-panel-title">Ocupación Global</span>
+            <span class="chart-legend-tag" style="color:#10b981;margin-left:auto;">▲ Libre</span>
+            <span class="chart-legend-tag" style="color:#e11d48;margin-left:12px;">▼ Saturado</span>
+          </div>
+          <div class="chart-panel-body">
+            <div class="chart-container-tech" style="height: 340px;"><canvas id="occupancyChart"></canvas></div>
+          </div>
         </div>
       </div>
     </div>
 
-  </div>
+    <!-- ══ GESTIÓN ══ -->
+    <div id="sec-gestion" class="adm-anchor">
+      <div class="adm-section-label">Gestión</div>
 
-  <!-- ══════════════════════════════════════════════════════════
-       CHARTS ROW 2 — Análisis Profundo (Barras)
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Análisis Profundo</div>
-  <div class="adm-charts-row cols-2">
+      <div class="adm-action-grid">
 
-    <div class="panel chart-panel" style="flex: 1 1 320px;">
-      <div class="chart-panel-header">
-        <i class="chart-panel-icon green">▲</i>
-        <span class="chart-panel-title">Conversión de Alumnos</span>
-      </div>
-      <div class="chart-panel-body">
-        <div class="chart-container-tech" style="height: 340px;">
-          <canvas id="conversionChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel chart-panel" style="flex: 2 1 560px;">
-      <div class="chart-panel-header">
-        <i class="chart-panel-icon green">▬</i>
-        <span class="chart-panel-title">Ocupación Global</span>
-        <span class="chart-legend-tag" style="color: #10b981; margin-left: auto;">▲ Libre</span>
-        <span class="chart-legend-tag" style="color: #e11d48; margin-left: 12px;">▼ Saturado</span>
-      </div>
-      <div class="chart-panel-body">
-        <div class="chart-container-tech" style="height: 340px;">
-          <canvas id="occupancyChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       FORMULARIOS RÁPIDOS
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Gestión</div>
-  <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start;">
-
-    <!-- ── Nuevo Personal ── -->
-    <details class="panel adm-accordion" style="flex: 1; min-width: 300px;">
-      <summary>Nuevo Personal</summary>
-      <div class="adm-accordion-body">
-        <form id="adminAddUserForm" class="adm-form">
-          <label>Correo Electrónico
-            <input type="email" id="userEmail" required placeholder="correo@tec.mx" />
-          </label>
-          <label>Contraseña
-            <input type="password" id="userPassword" minlength="6" required placeholder="Mínimo 6 caracteres" />
-          </label>
-          <label>Rol
-            <select id="userRole" required>
-              <option value="SOCIO">Socio (ONG)</option>
-              <option value="BECARIO">Becario (Puerta)</option>
-              <option value="ADMIN">Administrador</option>
-            </select>
-          </label>
-          <button type="submit" class="btn-primary" style="margin-top: 0.5rem; width: 100%; padding: 12px;">
-            Crear Personal
+        <!-- Card: Nuevo Personal -->
+        <div class="adm-action-card panel" id="wrapPersonal">
+          <button class="adm-action-card__toggle" data-card="cardPersonal" aria-expanded="false">
+            <div class="adm-action-card__icon-wrap adm-action-card__icon-wrap--blue">
+              <svg viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 17c0-3.866 3.134-6 7-6s7 2.134 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M14 4v4M12 6h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="adm-action-card__meta">
+              <div class="adm-action-card__title">Nuevo Personal</div>
+              <div class="adm-action-card__sub">Crear cuenta de acceso</div>
+            </div>
+            <svg class="adm-action-card__chevron" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </button>
-          <div id="adminAddUserMessage" style="display:none; margin-top: 0.5rem;"></div>
-        </form>
+          <div class="adm-action-card__body" id="cardPersonal" style="display:none;">
+            <form id="adminAddUserForm" class="adm-form">
+              <label>Correo Electrónico
+                <input type="email" id="userEmail" required placeholder="correo@tec.mx" />
+              </label>
+              <label>Contraseña
+                <input type="password" id="userPassword" minlength="6" required placeholder="Mínimo 6 caracteres" />
+              </label>
+              <label>Rol
+                <select id="userRole" required>
+                  <option value="SOCIO">Socio (ONG)</option>
+                  <option value="BECARIO">Becario (Puerta)</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </label>
+              <button type="submit" class="adm-submit-btn" style="margin-top:0.75rem;width:100%;">Crear Personal</button>
+              <div id="adminAddUserMessage" style="display:none;margin-top:0.5rem;"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Card: Nuevo Proyecto -->
+        <div class="adm-action-card adm-action-card--wide panel" id="wrapProyecto">
+          <button class="adm-action-card__toggle" data-card="cardProyecto" aria-expanded="false">
+            <div class="adm-action-card__icon-wrap adm-action-card__icon-wrap--green">
+              <svg viewBox="0 0 20 20" fill="none">
+                <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M10 7v6M7 10h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="adm-action-card__meta">
+              <div class="adm-action-card__title">Nuevo Proyecto</div>
+              <div class="adm-action-card__sub">Registrar en la feria</div>
+            </div>
+            <svg class="adm-action-card__chevron" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="adm-action-card__body" id="cardProyecto" style="display:none;">
+            <form id="adminAddProjectForm" class="adm-form">
+              <div class="adm-form-row">
+                <label style="flex:2;min-width:250px;">Nombre del Proyecto <strong style="color:#f43f5e">*</strong><input type="text" id="projName" required /></label>
+                <label style="flex:1;min-width:150px;">Clave del Programa<input type="text" id="projClave" placeholder="Ej. WA1067" /></label>
+                <label style="flex:1;min-width:200px;">Dueño (Socio) <strong style="color:#f43f5e">*</strong><select id="projOwner" required><option value="">Cargando socios...</option></select></label>
+                <label style="flex:0 0 100px;">Cupo <strong style="color:#f43f5e">*</strong><input type="number" id="projCap" min="1" value="20" required /></label>
+              </div>
+              <hr class="adm-form-divider" /><span class="adm-form-section-title">Atributos de la Feria</span>
+              <div class="adm-form-row">
+                <label style="flex:1;min-width:200px;">Periodo<input type="text" id="projPeriodo" placeholder="Ej. Febrero – Junio" /></label>
+                <label style="flex:2;min-width:300px;">Carreras Permitidas
+                  <div class="adm-tags-wrapper">
+                    <input type="text" id="projCarreraInput" placeholder="Ej. ITC" class="adm-tags-input" />
+                    <button type="button" id="btnAddCarrera" class="adm-tags-add-btn">Añadir</button>
+                  </div>
+                  <div id="carrerasList" class="adm-tags-list"></div>
+                </label>
+              </div>
+              <div class="adm-form-row">
+                <label style="flex:1;min-width:200px;">Objetivo<textarea id="projObjetivo" rows="3"></textarea></label>
+                <label style="flex:1;min-width:200px;">Actividades<textarea id="projActividades" rows="3"></textarea></label>
+                <label style="flex:1;min-width:200px;">Competencias<textarea id="projCompetencias" rows="3"></textarea></label>
+              </div>
+              <div class="adm-form-row">
+                <label style="flex:1;min-width:150px;">Horario<input type="text" id="projHorario" placeholder="Ej. 8:30 a 13:30 hrs." /></label>
+                <label style="flex:1;min-width:150px;">Modalidad<input type="text" id="projModalidad" placeholder="Ej. Presencial" /></label>
+                <label style="flex:2;min-width:200px;">Lugar de Trabajo<input type="text" id="projLugar" /></label>
+              </div>
+              <div class="adm-form-row">
+                <label style="flex:1;min-width:150px;">Duración<input type="text" id="projDuracion" placeholder="Ej. 10 semanas" /></label>
+                <label style="flex:1;min-width:150px;">Horas máx<input type="text" id="projHoras" placeholder="Ej. 120 horas" /></label>
+                <label style="flex:2;min-width:200px;">Población que atiende<input type="text" id="projPoblacion" /></label>
+              </div>
+              <label>Comentarios adicionales<textarea id="projDesc" rows="2"></textarea></label>
+              <button type="submit" class="adm-submit-btn" style="margin-top:0.75rem;width:100%;">Crear Proyecto</button>
+              <div id="adminAddProjectMessage" style="display:none;margin-top:0.5rem;"></div>
+            </form>
+          </div>
+        </div>
+
       </div>
-    </details>
+    </div>
 
-    <!-- ── Nuevo Proyecto ── -->
+    <!-- ══ IMPORTAR PROYECTOS EN LOTE ══ -->
+    <div class="adm-section-label">Importar Proyectos</div>
     <details class="panel adm-accordion" style="flex: 1 1 100%;">
-      <summary>Nuevo Proyecto</summary>
+      <summary>Cargar Proyectos desde Excel</summary>
       <div class="adm-accordion-body">
-        <form id="adminAddProjectForm" class="adm-form">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
 
-          <div class="adm-form-row">
-            <label style="flex: 2; min-width: 250px;">
-              Nombre del Proyecto <strong style="color:#f43f5e">*</strong>
-              <input type="text" id="projName" required />
-            </label>
-            <label style="flex: 1; min-width: 150px;">
-              Clave del Programa
-              <input type="text" id="projClave" placeholder="Ej. WA1067" />
-            </label>
-            <label style="flex: 1; min-width: 200px;">
-              Dueño (Socio) <strong style="color:#f43f5e">*</strong>
-              <select id="projOwner" required>
-                <option value="">Cargando socios...</option>
+          <!-- Botón descargar template -->
+          <div style="flex: 1; min-width: 250px;">
+            <button id="btnDownloadTemplate" class="btn-secondary" type="button"
+              style="width: 100%; padding: 12px; border-radius: 8px;">
+              ↓ Descargar Template (Excel)
+            </button>
+            <small class="muted" style="display: block; margin-top: 8px;">
+              Descarga la plantilla con el formato correcto
+            </small>
+          </div>
+
+          <!-- Input de archivo + upload -->
+          <div style="flex: 1; min-width: 250px;">
+            <input type="file" id="excelFileInput" accept=".xlsx" style="margin-bottom: 8px; width: 100%;" />
+            <button id="btnUploadExcel" class="btn-primary" type="button"
+              style="width: 100%; padding: 12px; border-radius: 8px;">
+              Subir Excel
+            </button>
+            <small class="muted" style="display: block; margin-top: 8px;">
+              Solo .xlsx, máx 1000 proyectos
+            </small>
+          </div>
+
+          <!-- Owner opcional -->
+          <div style="flex: 1; min-width: 250px;">
+            <label>
+              Owner (Opcional - fallback para proyectos sin email)
+              <select id="excelDefaultOwner">
+                <option value="">Usar emails del Excel</option>
               </select>
             </label>
-            <label style="flex: 0 0 100px;">
-              Cupo <strong style="color:#f43f5e">*</strong>
-              <input type="number" id="projCap" min="1" value="20" required />
-            </label>
+            <small class="muted" style="display: block; margin-top: 8px;">
+              Si el Excel tiene owner_email, se usará primero
+            </small>
           </div>
 
-          <hr class="adm-form-divider" />
-          <span class="adm-form-section-title">Atributos de la Feria</span>
+        </div>
 
-          <div class="adm-form-row">
-            <label style="flex: 1; min-width: 200px;">
-              Periodo
-              <input type="text" id="projPeriodo" placeholder="Ej. Febrero – Junio" />
-            </label>
-            <label style="flex: 2; min-width: 300px;">
-              Carreras Permitidas
-              <div class="adm-tags-wrapper">
-                <input type="text" id="projCarreraInput" placeholder="Ej. ITC" class="adm-tags-input" />
-                <button type="button" id="btnAddCarrera" class="btn-primary adm-tags-add-btn">Añadir</button>
-              </div>
-              <div id="carrerasList" class="adm-tags-list"></div>
-            </label>
+        <!-- Progreso y resultados -->
+        <div id="excelUploadProgress" style="display: none; margin-top: 1rem;">
+          <div style="background: var(--surface-soft); padding: 12px; border-radius: 8px;">
+            <div>Procesando <span id="excelProgressCount">0</span> / <span id="excelProgressTotal">0</span> proyectos...</div>
+            <div style="background: var(--surface); height: 8px; border-radius: 4px; margin-top: 8px;">
+              <div id="excelProgressBar" style="background: var(--primary); height: 100%; border-radius: 4px; width: 0%; transition: width 0.3s;"></div>
+            </div>
           </div>
+        </div>
 
-          <div class="adm-form-row">
-            <label style="flex: 1; min-width: 200px;">
-              Objetivo del Proyecto
-              <textarea id="projObjetivo" rows="3"></textarea>
-            </label>
-            <label style="flex: 1; min-width: 200px;">
-              Actividades a Realizar
-              <textarea id="projActividades" rows="3"></textarea>
-            </label>
-            <label style="flex: 1; min-width: 200px;">
-              Competencias Requeridas
-              <textarea id="projCompetencias" rows="3"></textarea>
-            </label>
+        <!-- Errores -->
+        <div id="excelErrorsList" style="display: none; margin-top: 1rem;">
+          <div style="background: rgba(225, 29, 72, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #e11d48;">
+            <strong style="color: #e11d48;">Errores encontrados:</strong>
+            <ul id="excelErrorsUl" style="margin: 8px 0 0 20px; padding: 0;"></ul>
           </div>
+        </div>
 
-          <div class="adm-form-row">
-            <label style="flex: 1; min-width: 150px;">
-              Horario
-              <input type="text" id="projHorario" placeholder="Ej. 8:30 a 13:30 hrs." />
-            </label>
-            <label style="flex: 1; min-width: 150px;">
-              Modalidad
-              <input type="text" id="projModalidad" placeholder="Ej. Presencial" />
-            </label>
-            <label style="flex: 2; min-width: 200px;">
-              Lugar de Trabajo
-              <input type="text" id="projLugar" placeholder="Ej. Av. El Torreón s/n..." />
-            </label>
-          </div>
-
-          <div class="adm-form-row">
-            <label style="flex: 1; min-width: 150px;">
-              Duración
-              <input type="text" id="projDuracion" placeholder="Ej. 10 semanas" />
-            </label>
-            <label style="flex: 1; min-width: 150px;">
-              Horas máx a acreditar
-              <input type="text" id="projHoras" placeholder="Ej. Hasta 120 horas" />
-            </label>
-            <label style="flex: 2; min-width: 200px;">
-              Población que atiende
-              <input type="text" id="projPoblacion" placeholder="Ej. Niñas y niños de 6 a 12 años" />
-            </label>
-          </div>
-
-          <label>
-            Comentarios adicionales
-            <textarea id="projDesc" rows="2"></textarea>
-          </label>
-
-          <button type="submit" class="btn-primary"
-            style="margin-top: 0.5rem; padding: 14px; font-size: 1rem; border-radius: 10px; width: 100%;">
-            Crear Proyecto
-          </button>
-          <div id="adminAddProjectMessage" style="display:none; margin-top: 0.5rem;"></div>
-
-        </form>
+        <div id="excelUploadMessage" style="display: none; margin-top: 1rem;"></div>
       </div>
     </details>
 
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       TABLA DE PROYECTOS
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Proyectos</div>
-  <div class="panel" style="padding: 0; overflow: hidden;">
-    <div class="adm-panel-header">
-      <h2>Listado Desglosado de Proyectos</h2>
-    </div>
-    <div style="overflow-x: auto;">
-      <table class="adm-table">
-        <thead>
-          <tr>
-            <th>Proyecto</th>
-            <th>Lugares ocupados</th>
-            <th>Ocupación</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="projectsTableBody">
-          <tr>
-            <td colspan="4" style="text-align:center; padding: 2.5rem; color: #475569;">
-              Cargando proyectos...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════════
-       TABLA DE ESTUDIANTES
-  ══════════════════════════════════════════════════════════ -->
-  <div class="adm-section-label">Alumnos</div>
-  <div class="panel" style="padding: 0; overflow: hidden;">
-    <div class="adm-panel-header">
-      <h2>Todos los Alumnos</h2>
-      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-        <input type="text" id="searchStudent" class="adm-search" placeholder="Buscar matrícula o correo..." />
-        <button id="btnExportStudents" class="btn-secondary"
-          style="padding: 9px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap;">
-          ↓ Exportar CSV
-        </button>
+    <!-- ══ PROYECTOS ══ -->
+    <div id="sec-proyectos" class="adm-anchor">
+      <div class="adm-section-label">Proyectos</div>
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div class="adm-panel-header">
+          <h2>Listado de Proyectos</h2>
+          <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="searchProject" class="adm-search" placeholder="Buscar proyecto..." />
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="adm-table">
+            <thead>
+              <tr>
+                <th>Proyecto</th>
+                <th>Lugares ocupados</th>
+                <th>Ocupación</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="projectsTableBody">
+              <tr><td colspan="4" style="text-align:center;padding:2.5rem;color:#475569;">Cargando proyectos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="proyectosVerMas" class="adm-ver-mas" style="display:none;">
+          <button class="adm-ver-mas__btn" id="btnVerMasProyectos">Ver más proyectos</button>
+          <span class="adm-ver-mas__count" id="proyectosCount"></span>
+        </div>
       </div>
     </div>
-    <div style="overflow-x: auto;">
-      <table class="adm-table">
-        <thead>
-          <tr>
-            <th>Matrícula / Correo</th>
-            <th>Estado</th>
-            <th>Proyecto</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="studentsTableBody">
-          <tr>
-            <td colspan="4" style="text-align:center; padding: 2.5rem; color: #475569;">
-              Cargando alumnos...
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <!-- ══ ALUMNOS ══ -->
+    <div id="sec-alumnos" class="adm-anchor">
+      <div class="adm-section-label">Alumnos</div>
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div class="adm-panel-header">
+          <h2>Todos los Alumnos</h2>
+          <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="searchStudent" class="adm-search" placeholder="Buscar matrícula o correo..." />
+            <button id="btnExportStudents" class="btn-secondary" style="padding:9px 16px;border-radius:8px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;">
+              ↓ Exportar CSV
+            </button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="adm-table">
+            <thead>
+              <tr>
+                <th>Matrícula / Correo</th>
+                <th>Estado</th>
+                <th>Proyecto</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr><td colspan="4" style="text-align:center;padding:2.5rem;color:#475569;">Cargando alumnos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="alumnosVerMas" class="adm-ver-mas" style="display:none;">
+          <button class="adm-ver-mas__btn" id="btnVerMasAlumnos">Ver más alumnos</button>
+          <span class="adm-ver-mas__count" id="alumnosCount"></span>
+        </div>
+      </div>
     </div>
-  </div>
 
-</section>
+  </section>
+</div>
 
-<!-- ══════════════════════════════════════════════════════════════
-     MODAL: EDITAR PROYECTO
-══════════════════════════════════════════════════════════════ -->
-<div id="editProjectModal" class="adm-modal-backdrop" style="display: none;">
+<!-- ══ MODAL ══ -->
+<div id="editProjectModal" class="adm-modal-backdrop" style="display:none;">
   <div class="adm-modal">
-
     <div class="adm-modal-header">
       <h2>Editar Proyecto</h2>
       <button id="closeEditProjectModal" class="adm-modal-close">&times;</button>
     </div>
-
     <div class="adm-modal-body">
       <form id="adminEditProjectForm" class="adm-form">
         <input type="hidden" id="editProjId" />
-
         <div class="adm-form-row">
-          <label style="flex: 2; min-width: 250px;">
-            Nombre del Proyecto <strong style="color:#f43f5e">*</strong>
-            <input type="text" id="editProjName" required />
-          </label>
-          <label style="flex: 1; min-width: 150px;">
-            Clave del Programa
-            <input type="text" id="editProjClave" placeholder="Ej. WA1067" />
-          </label>
-          <label style="flex: 1; min-width: 200px;">
-            Dueño (Socio) <strong style="color:#f43f5e">*</strong>
-            <select id="editProjOwner" required></select>
-          </label>
-          <label style="flex: 0 0 100px;">
-            Cupo <strong style="color:#f43f5e">*</strong>
-            <input type="number" id="editProjCap" min="1" required />
+          <label style="flex:2;min-width:250px;">Nombre <strong style="color:#f43f5e">*</strong><input type="text" id="editProjName" required /></label>
+          <label style="flex:1;min-width:150px;">Clave<input type="text" id="editProjClave" /></label>
+          <label style="flex:1;min-width:200px;">Socio <strong style="color:#f43f5e">*</strong><select id="editProjOwner" required></select></label>
+          <label style="flex:0 0 100px;">Cupo <strong style="color:#f43f5e">*</strong><input type="number" id="editProjCap" min="1" required /></label>
+        </div>
+        <hr class="adm-form-divider"/><span class="adm-form-section-title">Atributos</span>
+        <div class="adm-form-row">
+          <label style="flex:1;min-width:200px;">Imagen del Proyecto
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <img id="editProjImagePreview" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--surface-soft);" src="" alt="Preview" />
+              <div style="flex:1;">
+                <input type="file" id="editProjImageInput" accept=".jpg,.jpeg,.png,.webp" style="margin-bottom:8px;width:100%;" />
+                <small class="muted">JPG, PNG o WebP. Máx 5MB.</small>
+              </div>
+            </div>
           </label>
         </div>
-
-        <hr class="adm-form-divider" />
-        <span class="adm-form-section-title">Atributos de la Feria</span>
-
         <div class="adm-form-row">
-          <label style="flex: 1; min-width: 200px;">
-            Periodo
-            <input type="text" id="editProjPeriodo" />
-          </label>
-          <label style="flex: 2; min-width: 300px;">
-            Carreras Permitidas
+          <label style="flex:1;min-width:200px;">Periodo<input type="text" id="editProjPeriodo" /></label>
+          <label style="flex:2;min-width:300px;">Carreras
             <div class="adm-tags-wrapper">
               <input type="text" id="editProjCarreraInput" placeholder="Ej. ITC" class="adm-tags-input" />
-              <button type="button" id="btnEditAddCarrera" class="btn-primary adm-tags-add-btn">Añadir</button>
+              <button type="button" id="btnEditAddCarrera" class="adm-tags-add-btn">Añadir</button>
             </div>
             <div id="editCarrerasList" class="adm-tags-list"></div>
           </label>
         </div>
-
         <div class="adm-form-row">
-          <label style="flex: 1; min-width: 200px;">
-            Objetivo del Proyecto
-            <textarea id="editProjObjetivo" rows="3"></textarea>
-          </label>
-          <label style="flex: 1; min-width: 200px;">
-            Actividades a Realizar
-            <textarea id="editProjActividades" rows="3"></textarea>
-          </label>
-          <label style="flex: 1; min-width: 200px;">
-            Competencias Requeridas
-            <textarea id="editProjCompetencias" rows="3"></textarea>
-          </label>
+          <label style="flex:1;min-width:200px;">Objetivo<textarea id="editProjObjetivo" rows="3"></textarea></label>
+          <label style="flex:1;min-width:200px;">Actividades<textarea id="editProjActividades" rows="3"></textarea></label>
+          <label style="flex:1;min-width:200px;">Competencias<textarea id="editProjCompetencias" rows="3"></textarea></label>
         </div>
-
         <div class="adm-form-row">
-          <label style="flex: 1; min-width: 150px;">
-            Horario
-            <input type="text" id="editProjHorario" />
-          </label>
-          <label style="flex: 1; min-width: 150px;">
-            Modalidad
-            <input type="text" id="editProjModalidad" />
-          </label>
-          <label style="flex: 2; min-width: 200px;">
-            Lugar de Trabajo
-            <input type="text" id="editProjLugar" />
-          </label>
+          <label style="flex:1;min-width:150px;">Horario<input type="text" id="editProjHorario" /></label>
+          <label style="flex:1;min-width:150px;">Modalidad<input type="text" id="editProjModalidad" /></label>
+          <label style="flex:2;min-width:200px;">Lugar<input type="text" id="editProjLugar" /></label>
         </div>
-
         <div class="adm-form-row">
-          <label style="flex: 1; min-width: 150px;">
-            Duración
-            <input type="text" id="editProjDuracion" />
-          </label>
-          <label style="flex: 1; min-width: 150px;">
-            Horas máx a acreditar
-            <input type="text" id="editProjHoras" />
-          </label>
-          <label style="flex: 2; min-width: 200px;">
-            Población que atiende
-            <input type="text" id="editProjPoblacion" />
-          </label>
+          <label style="flex:1;min-width:150px;">Duración<input type="text" id="editProjDuracion" /></label>
+          <label style="flex:1;min-width:150px;">Horas máx<input type="text" id="editProjHoras" /></label>
+          <label style="flex:2;min-width:200px;">Población<input type="text" id="editProjPoblacion" /></label>
         </div>
-
-        <label>
-          Comentarios adicionales
-          <textarea id="editProjDesc" rows="2"></textarea>
-        </label>
-
-        <button type="submit" class="btn-primary"
-          style="margin-top: 0.5rem; padding: 14px; font-size: 1rem; border-radius: 10px; width: 100%;">
-          Guardar Cambios
-        </button>
-        <div id="adminEditProjectMessage" style="display:none; margin-top: 0.5rem;"></div>
-
+        <label>Comentarios<textarea id="editProjDesc" rows="2"></textarea></label>
+        <button type="submit" class="adm-submit-btn" style="margin-top:0.75rem;width:100%;">Guardar Cambios</button>
+        <div id="adminEditProjectMessage" style="display:none;margin-top:0.5rem;"></div>
       </form>
     </div>
-
   </div>
 </div>
 
@@ -456,5 +482,116 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="{{ url_for('static', path='js/admin.js') }}?v=15"></script>
+<script type="module" src="{{ url_for('static', path='js/admin.js') }}?v=16"></script>
+<script>
+/* ── SIDEBAR NAVIGATION ─────────────────────────────────────── */
+const TOPBAR_H = document.getElementById('mainHeader')?.offsetHeight || 64;
+const NAV_OFFSET = TOPBAR_H + 24; // extra breathing room
+
+document.querySelectorAll('.adm-nav__item').forEach(item => {
+  item.addEventListener('click', () => {
+    const target = document.getElementById(item.dataset.target);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
+
+// Active state via IntersectionObserver
+const sections  = document.querySelectorAll('.adm-anchor');
+const navItems  = document.querySelectorAll('.adm-nav__item');
+
+const setActive = (id) => {
+  navItems.forEach(n => n.classList.toggle('adm-nav__item--active', n.dataset.target === id));
+};
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+}, { rootMargin: `-${NAV_OFFSET}px 0px -60% 0px`, threshold: 0 });
+
+sections.forEach(s => observer.observe(s));
+setActive('sec-kpis');
+
+/* ── ACTION CARDS TOGGLE ────────────────────────────────────── */
+document.querySelectorAll('.adm-action-card__toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const bodyId = btn.dataset.card;
+    const body   = document.getElementById(bodyId);
+    const open   = body.style.display !== 'none';
+    // Close
+    if (open) {
+      body.style.display = 'none';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.classList.remove('adm-action-card__toggle--open');
+    } else {
+      // Close any other open card first
+      document.querySelectorAll('.adm-action-card__body').forEach(b => {
+        if (b.id !== bodyId && b.style.display !== 'none') {
+          b.style.display = 'none';
+          const otherBtn = document.querySelector(`[data-card="${b.id}"]`);
+          if (otherBtn) {
+            otherBtn.setAttribute('aria-expanded', 'false');
+            otherBtn.classList.remove('adm-action-card__toggle--open');
+          }
+        }
+      });
+      body.style.display = 'block';
+      btn.setAttribute('aria-expanded', 'true');
+      btn.classList.add('adm-action-card__toggle--open');
+      // Scroll card into view smoothly
+      setTimeout(() => btn.closest('.adm-action-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  });
+});
+
+/* ── PAGINATION HELPER ──────────────────────────────────────── */
+const PAGE = 6; // rows shown per page
+
+function initPagination(tbodyId, verMasId, btnId, countId) {
+  // Wait for admin.js to populate the table
+  const tbody   = document.getElementById(tbodyId);
+  const wrapper = document.getElementById(verMasId);
+  const btn     = document.getElementById(btnId);
+  const counter = document.getElementById(countId);
+  if (!tbody || !wrapper || !btn) return;
+
+  let shown = PAGE;
+
+  function refresh() {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const total = rows.length;
+    rows.forEach((r, i) => r.style.display = i < shown ? '' : 'none');
+    const remaining = total - shown;
+    if (remaining > 0) {
+      wrapper.style.display = 'flex';
+      counter.textContent   = `${shown} de ${total}`;
+      btn.textContent       = `Ver más (${Math.min(PAGE, remaining)} más)`;
+    } else {
+      wrapper.style.display = 'none';
+    }
+  }
+
+  btn.addEventListener('click', () => { shown += PAGE; refresh(); });
+
+  // Re-run whenever admin.js mutates the tbody (MutationObserver)
+  new MutationObserver(() => { shown = PAGE; refresh(); })
+    .observe(tbody, { childList: true });
+
+  refresh();
+}
+
+// Init after a tick to let admin.js run first
+setTimeout(() => {
+  initPagination('projectsTableBody', 'proyectosVerMas', 'btnVerMasProyectos', 'proyectosCount');
+  initPagination('studentsTableBody',  'alumnosVerMas',   'btnVerMasAlumnos',   'alumnosCount');
+}, 800);
+
+/* ── PROJECT SEARCH ─────────────────────────────────────────── */
+document.getElementById('searchProject')?.addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll('#projectsTableBody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+</script>
 {% endblock %}

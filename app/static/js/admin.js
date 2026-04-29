@@ -266,7 +266,7 @@ async function loadAdminMetrics() {
               ${p.is_active ? 'Desactivar' : 'Activar'}
             </button>
             <button class="btn-edit-project" data-id="${p.project_id}" style="padding: 5px 15px; border-radius: 4px; border: 1px solid var(--primary); background: white; color: var(--primary); cursor:pointer; font-weight: bold; transition: all 0.2s;">
-              ✏️ Editar
+              Editar
             </button>
           </div>
         </td>

@@ -5,6 +5,8 @@ from app.models.checkin import Checkin
 from app.models.temp_code import TempCode
 from app.models.registration import Registration
 from app.models.qr_token import QRToken
+from app.models.career import Career
+from app.models.pre_registration import PreRegistration
 
 __all__ = [
     "User",
@@ -14,4 +16,6 @@ __all__ = [
     "TempCode",
     "Registration",
     "QRToken",
+    "Career",
+    "PreRegistration",
 ]

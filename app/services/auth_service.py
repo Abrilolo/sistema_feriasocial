@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.core.auth_errors import AuthErrorCode, AuthException
 from app.core.config import settings
 from app.models.student import Student
+from app.models.pre_registration import PreRegistration
 
 logger = logging.getLogger(__name__)
 
@@ -320,6 +321,39 @@ class StudentAuthService:
         ).hexdigest()
 
     @staticmethod
+    def require_preregistration(
+        db: Session,
+        email: str,
+        auth_request_id: Optional[str] = None,
+    ) -> None:
+        """
+        Bloquea el login si el estudiante no ha hecho pre-registro.
+
+        Permite el acceso si ya existe en students (login previo válido).
+        Para estudiantes nuevos exige un registro en pre_registrations.
+        """
+        existing_student = db.query(Student).filter(Student.email == email).first()
+        if existing_student:
+            return
+
+        matricula = StudentAuthService.extract_matricula(email)
+        pre_reg = (
+            db.query(PreRegistration)
+            .filter(
+                (PreRegistration.email == email)
+                | (PreRegistration.matricula == matricula)
+            )
+            .first()
+        )
+
+        if not pre_reg:
+            raise AuthException(
+                AuthErrorCode.STUDENT_PREREGISTRATION_REQUIRED,
+                f"Sin pre-registro para {email}",
+                auth_request_id=auth_request_id,
+            )
+
+    @staticmethod
     def upsert_student(
         db: Session,
         google_id: str,
@@ -401,6 +435,57 @@ class StudentAuthService:
                 f"Error en upsert: {str(e)}",
                 auth_request_id=auth_request_id,
                 details={"error_type": type(e).__name__},
+            )
+
+    @staticmethod
+    def integrate_preregistration(
+        db: Session,
+        student: Student,
+        auth_request_id: Optional[str] = None,
+    ) -> None:
+        """
+        Integra datos de pre-registro con el estudiante que acaba de autenticarse.
+
+        Si existe un PreRegistration con el mismo email del student:
+        - Copia datos faltantes (teléfono, carrera) al student
+        - Elimina el pre-registro
+
+        Args:
+            db: Sesión de base de datos
+            student: Estudiante que se acaba de crear/actualizar
+            auth_request_id: ID para trazabilidad
+        """
+        try:
+            pre_reg = db.query(PreRegistration).filter(
+                PreRegistration.email == student.email
+            ).first()
+
+            if not pre_reg:
+                return
+
+            # Copiar datos faltantes del pre-registro
+            if not student.full_name and pre_reg.full_name:
+                student.full_name = pre_reg.full_name
+
+            if not student.career and pre_reg.career_id:
+                student.career = pre_reg.career.nombre_carrera if pre_reg.career else None
+
+            db.commit()
+
+            # Eliminar el pre-registro después de usarlo
+            db.delete(pre_reg)
+            db.commit()
+
+            logger.info(
+                f"Pre-registro integrado para {student.email}",
+                extra={"auth_request_id": auth_request_id}
+            )
+
+        except Exception as e:
+            db.rollback()
+            logger.error(
+                f"Error integrando pre-registro: {str(e)}",
+                extra={"auth_request_id": auth_request_id, "email": student.email}
             )
 
 

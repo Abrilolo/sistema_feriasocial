@@ -161,6 +161,14 @@ def admin_page(request: Request, db: Session = Depends(get_db)):
         },
     )
 
+@router.get("/preregistro", response_class=HTMLResponse)
+def preregistro_page(request: Request, db: Session = Depends(get_db)):
+    """
+    Página pública de pre-registro para estudiantes.
+    """
+    return templates.TemplateResponse("preregistro.html", {"request": request})
+
+
 @router.get("/acceso-estudiante", response_class=HTMLResponse)
 def student_qr_page(request: Request, db: Session = Depends(get_db)):
     """

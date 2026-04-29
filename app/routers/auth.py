@@ -355,6 +355,24 @@ async def google_callback(
             detail="Solo se permiten cuentas institucionales del Tec (@tec.mx).",
         )
 
+    # Verificar que el estudiante haya hecho pre-registro
+    try:
+        StudentAuthService.require_preregistration(
+            db=db,
+            email=email,
+            auth_request_id=auth_request_id,
+        )
+    except AuthException as e:
+        AuthLogger.log_failure(
+            e.code,
+            e.message,
+            auth_request_id=auth_request_id,
+        )
+        return RedirectResponse(
+            url="/preregistro?error=prereg_required",
+            status_code=302,
+        )
+
     # Upsert atómico del estudiante
     try:
         student = StudentAuthService.upsert_student(
@@ -370,6 +388,13 @@ async def google_callback(
             "AUTH_STUDENT_UPSERTED",
             auth_request_id=auth_request_id,
             student_id=str(student.id),
+        )
+
+        # Integrar datos de pre-registro si existen
+        StudentAuthService.integrate_preregistration(
+            db=db,
+            student=student,
+            auth_request_id=auth_request_id,
         )
 
     except AuthException as e:

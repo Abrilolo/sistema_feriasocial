@@ -38,6 +38,7 @@ class AuthErrorCode(str, Enum):
     STUDENT_UPSERT_FAILED = "AUTH_STUDENT_UPSERT_FAILED"
     STUDENT_NOT_FOUND = "AUTH_STUDENT_NOT_FOUND"
     STUDENT_BLOCKED = "AUTH_STUDENT_BLOCKED"
+    STUDENT_PREREGISTRATION_REQUIRED = "AUTH_STUDENT_PREREGISTRATION_REQUIRED"
 
     # Errores de sesión
     SESSION_ISSUE_FAILED = "AUTH_SESSION_ISSUE_FAILED"
@@ -94,6 +95,7 @@ class AuthException(Exception):
             AuthErrorCode.INVALID_EMAIL_FORMAT: "El formato del correo no es válido.",
             AuthErrorCode.MISSING_REQUIRED_CLAIMS: "Falta información necesaria de tu cuenta.",
             AuthErrorCode.STUDENT_UPSERT_FAILED: "Error al registrar tu cuenta. Contacta a soporte.",
+            AuthErrorCode.STUDENT_PREREGISTRATION_REQUIRED: "Debes completar el pre-registro antes de iniciar sesión.",
             AuthErrorCode.SESSION_ISSUE_FAILED: "Error al crear tu sesión. Intenta de nuevo.",
             AuthErrorCode.FEDERATED_LOGOUT_FAILED: "Error al cerrar sesión en el sistema federado.",
             AuthErrorCode.RATE_LIMIT_EXCEEDED: "Demasiados intentos. Espera un momento.",

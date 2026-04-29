@@ -1,8 +1,11 @@
 from datetime import datetime
 import uuid
 import re
+import os
+import time
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy.orm import Session
 
@@ -15,6 +18,8 @@ from app.models.project import Project
 from app.models.checkin import Checkin
 from app.models.registration import Registration
 from app.models.temp_code import TempCode
+
+from app.services.excel_import_service import ExcelImportValidator
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -764,3 +769,180 @@ def activate_project(
             "is_active": project.is_active,
         },
     }
+
+
+@router.post("/projects/{project_id}/upload-image")
+def upload_project_image(
+    project_id: uuid.UUID,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    _=Depends(require_role("ADMIN")),
+):
+    """
+    Sube una imagen para un proyecto.
+    Tipos permitidos: .jpg, .jpeg, .png, .webp
+    Tamaño máximo: 5MB
+    """
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Proyecto no encontrado.",
+        )
+
+    # Validar extensión
+    allowed_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
+    file_ext = Path(file.filename).suffix.lower() if file.filename else ""
+
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Formato no permitido. Usa: {', '.join(allowed_extensions)}",
+        )
+
+    # Validar tamaño (5MB max)
+    max_size = 5 * 1024 * 1024  # 5MB en bytes
+
+    try:
+        # Leer contenido del archivo
+        contents = file.file.read()
+        file.file.seek(0)
+
+        if len(contents) > max_size:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Archivo muy grande. Máximo: {max_size / (1024*1024):.0f}MB",
+            )
+
+        # Crear directorio si no existe
+        img_dir = Path("app/static/img/projects")
+        img_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generar nombre único: {project_id}_{timestamp}.{ext}
+        timestamp = int(time.time() * 1000)  # milliseconds
+        filename = f"{project_id}_{timestamp}{file_ext}"
+        filepath = img_dir / filename
+
+        # Guardar archivo
+        with open(filepath, "wb") as f:
+            f.write(contents)
+
+        # Actualizar proyecto
+        project.image_filename = filename
+
+        try:
+            db.commit()
+            db.refresh(project)
+        except Exception:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No se pudo actualizar el proyecto.",
+            )
+
+        return {
+            "ok": True,
+            "message": "Imagen cargada correctamente.",
+            "image_filename": filename,
+            "image_url": f"/static/img/projects/{filename}",
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al procesar la imagen: {str(e)}",
+        )
+
+
+@router.post("/projects/upload-excel", status_code=status.HTTP_201_CREATED)
+def upload_projects_excel(
+    file: UploadFile = File(...),
+    owner_user_id: str | None = None,
+    db: Session = Depends(get_db),
+    _=Depends(require_role("ADMIN")),
+):
+    """
+    Sube múltiples proyectos desde un archivo Excel.
+
+    Parámetros:
+    - file: Archivo .xlsx
+    - owner_user_id: UUID opcional para asignar como owner por defecto
+
+    El Excel debe tener columnas:
+    - name (requerido)
+    - capacity (requerido)
+    - owner_email (opcional, si no hay se usa owner_user_id)
+    - Otros campos opcionales: periodo, carreras_permitidas, objetivo, etc.
+
+    Retorna:
+    - Si hay errores: 400 con lista de errores (sin crear nada)
+    - Si éxito: 201 con cantidad de proyectos creados
+    """
+
+    # Validar extensión
+    if not file.filename or not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se aceptan archivos .xlsx",
+        )
+
+    # Validar tamaño (10MB max)
+    max_size = 10 * 1024 * 1024
+
+    try:
+        contents = file.file.read()
+        file.file.seek(0)
+
+        if len(contents) > max_size:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Archivo muy grande. Máximo: 10MB",
+            )
+
+        # Validar Excel
+        validator = ExcelImportValidator(contents, owner_user_id)
+        is_valid, projects_data, errors = validator.validate(db)
+
+        if not is_valid:
+            return {
+                "ok": False,
+                "errors": errors,
+            }
+
+        # Si no hay errores, crear todos los proyectos
+        created_count = 0
+        try:
+            for proj_data in projects_data:
+                # Convertir UUID strings a uuid objects
+                proj_data["owner_user_id"] = uuid.UUID(proj_data["owner_user_id"])
+
+                project = Project(**proj_data)
+                db.add(project)
+
+            db.commit()
+            created_count = len(projects_data)
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al crear proyectos en BD: {str(e)}",
+            )
+
+        return {
+            "ok": True,
+            "message": f"{created_count} proyecto(s) creado(s) exitosamente.",
+            "created": created_count,
+            "errors": [],
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al procesar Excel: {str(e)}",
+        )

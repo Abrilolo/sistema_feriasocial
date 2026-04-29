@@ -457,6 +457,88 @@ body.est-student-page main.container {
   text-align: center;
 }
 
+/* ── CAREER DROPDOWN ─────────────────────────────────────────── */
+.career-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  z-index: 100;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 1px solid #f1f5f9;
+}
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: #f8fafc; }
+
+.dropdown-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+.dropdown-subtitle {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.dropdown-empty {
+  padding: 20px;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 0.875rem;
+}
+
+.form-group {
+  position: relative;
+}
+
+/* ── INPUT STATES ────────────────────────────────────────────── */
+.input-status {
+  display: block;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  height: 14px;
+  transition: color 0.15s;
+}
+.input-status.checking {
+  color: #f59e0b;
+}
+.input-status.success {
+  color: #10b981;
+}
+.input-status.error {
+  color: #f43f5e;
+}
+
+.input-error {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1) !important;
+}
+
+/* ── LINK STYLING ────────────────────────────────────────────── */
+.link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
 @media (max-width: 700px) {
   body.est-student-page main.container {

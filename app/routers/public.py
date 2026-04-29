@@ -13,6 +13,8 @@ from app.models.project import Project
 from app.models.user import User
 from app.models.registration import Registration
 from app.models.qr_token import QRToken
+from app.models.career import Career
+from app.models.pre_registration import PreRegistration
 from app.core.security import get_current_student
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -25,6 +27,24 @@ class RegisterProjectRequest(BaseModel):
 
 class GenerateQRRequest(BaseModel):
     career: str | None = None
+
+
+class PreRegistrationRequest(BaseModel):
+    matricula: str
+    email: EmailStr
+    full_name: str
+    phone: str
+    career_id: str | None = None
+
+
+class CareerResponse(BaseModel):
+    id: str
+    nombre_carrera: str
+    siglas: str
+    escuela: str
+
+    class Config:
+        from_attributes = True
 
 
 @router.get("/ping")
@@ -241,3 +261,83 @@ def get_projects(
         })
 
     return output
+
+
+@router.get("/careers")
+def get_careers(db: Session = Depends(get_db)):
+    """Lista todas las carreras disponibles para pre-registro."""
+    careers = db.query(Career).order_by(Career.nombre_carrera).all()
+    return [
+        {
+            "id": str(c.id),
+            "nombre_carrera": c.nombre_carrera,
+            "siglas": c.siglas,
+            "escuela": c.escuela,
+        }
+        for c in careers
+    ]
+
+
+@router.post("/preregister", status_code=201)
+@limiter.limit("10/minute")
+def preregister(
+    request: Request,
+    payload: PreRegistrationRequest,
+    db: Session = Depends(get_db),
+):
+    """Pre-registro de estudiante: guardar datos antes de Google OAuth."""
+    matricula = payload.matricula.strip().upper()
+    email = payload.email.lower().strip()
+    full_name = payload.full_name.strip()
+    phone = payload.phone.strip()
+
+    # Verificar si matrícula ya existe
+    existing = db.query(PreRegistration).filter(PreRegistration.matricula == matricula).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta matrícula ya está registrada.",
+        )
+
+    # Validar carrera si viene
+    career_id = None
+    if payload.career_id:
+        career = db.query(Career).filter(Career.id == payload.career_id).first()
+        if not career:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Carrera no encontrada.",
+            )
+        career_id = career.id
+
+    # Crear pre-registro
+    pre_reg = PreRegistration(
+        matricula=matricula,
+        email=email,
+        full_name=full_name,
+        phone=phone,
+        career_id=career_id,
+    )
+    db.add(pre_reg)
+    db.commit()
+    db.refresh(pre_reg)
+
+    return {
+        "ok": True,
+        "message": "Pre-registro exitoso. Ahora inicia sesión con Google.",
+        "pre_registration_id": str(pre_reg.id),
+        "matricula": pre_reg.matricula,
+    }
+
+
+@router.get("/check-matricula/{matricula}")
+def check_matricula(matricula: str, db: Session = Depends(get_db)):
+    """Verifica si una matrícula ya está pre-registrada."""
+    matricula = matricula.strip().upper()
+
+    pre_reg = db.query(PreRegistration).filter(PreRegistration.matricula == matricula).first()
+
+    return {
+        "matricula": matricula,
+        "exists": pre_reg is not None,
+    }
