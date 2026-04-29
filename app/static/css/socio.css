@@ -408,12 +408,14 @@
   line-height: 1.6;
 }
 
-/* ── Gauge: centered, large, stats below ─────────────────── */
+/* ── Gauge: stats left, gauge right ──────────────────────── */
 .soc-gauge-section {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .soc-gauge-svg-wrap {
@@ -460,12 +462,12 @@
   display: block;
 }
 
-/* stats row below gauge */
+/* stats left column */
 .soc-detail-stats {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-shrink: 0;
 }
 .soc-detail-stat {
   display: flex;

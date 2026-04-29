@@ -4,7 +4,7 @@
 {% block body_class %}soc-page{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', path='css/socio.css') }}?v=3" />
+<link rel="stylesheet" href="{{ url_for('static', path='css/socio.css') }}?v=4" />
 {% endblock %}
 
 {% block content %}
@@ -50,19 +50,8 @@
       </button>
     </div>
 
-    <!-- Gauge centrado + stats abajo -->
+    <!-- Stats izquierda · Gauge derecha -->
     <div class="soc-gauge-section">
-      <div class="soc-gauge-svg-wrap">
-        <svg viewBox="0 0 100 50" class="soc-gauge-svg">
-          <path d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-track" />
-          <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-fill" />
-        </svg>
-        <div class="soc-gauge-center">
-          <span id="statTakenGauge" class="soc-gauge-num">0</span>
-          <span class="soc-gauge-sub">de <span id="statCapacityGauge">0</span> inscritos</span>
-        </div>
-      </div>
-
       <div class="soc-detail-stats">
         <div class="soc-detail-stat">
           <span class="soc-detail-stat-label">Capacidad</span>
@@ -75,6 +64,17 @@
         <div class="soc-detail-stat">
           <span class="soc-detail-stat-label">Disponibles</span>
           <span class="soc-detail-stat-value" id="statRemaining">0</span>
+        </div>
+      </div>
+
+      <div class="soc-gauge-svg-wrap">
+        <svg viewBox="0 0 100 50" class="soc-gauge-svg">
+          <path d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-track" />
+          <path id="gaugeFill" d="M 10 50 A 40 40 0 0 1 90 50" class="soc-gauge-fill" />
+        </svg>
+        <div class="soc-gauge-center">
+          <span id="statTakenGauge" class="soc-gauge-num">0</span>
+          <span class="soc-gauge-sub">de <span id="statCapacityGauge">0</span> inscritos</span>
         </div>
       </div>
     </div>
