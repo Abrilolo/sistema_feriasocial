@@ -418,45 +418,45 @@
 
 .soc-gauge-svg-wrap {
   position: relative;
-  width: 220px;
+  width: 360px;
 }
-.soc-gauge-svg  { width: 220px; height: 110px; overflow: visible; display: block; }
+.soc-gauge-svg  { width: 360px; height: 180px; overflow: visible; display: block; }
 .soc-gauge-track {
   fill: none;
   stroke: #e2e8f0;
-  stroke-width: 10;
+  stroke-width: 8;
   stroke-linecap: round;
 }
 .soc-gauge-fill {
   fill: none;
   stroke: var(--soc-accent);
-  stroke-width: 10;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-dasharray: 125.66;
   stroke-dashoffset: 125.66;
   transition: stroke-dashoffset 1.1s cubic-bezier(0.4, 0, 0.2, 1),
               stroke 0.5s ease;
-  filter: drop-shadow(0 0 6px var(--soc-accent-glow));
+  filter: drop-shadow(0 0 8px var(--soc-accent-glow));
 }
 .soc-gauge-center {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   text-align: center;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
 }
 .soc-gauge-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 2.5rem;
+  font-size: 3.75rem;
   font-weight: 700;
   color: var(--soc-text);
   line-height: 1;
   display: block;
 }
 .soc-gauge-sub {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   color: var(--soc-muted);
   font-family: 'JetBrains Mono', monospace;
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
   display: block;
 }
 
@@ -658,8 +658,9 @@
   .soc-header { flex-direction: column; align-items: flex-start; }
   .soc-header-org { font-size: 1.4rem; }
   .soc-project-grid { grid-template-columns: 1fr; }
-  .soc-gauge-svg-wrap { width: 180px; }
-  .soc-gauge-svg { width: 180px; height: 90px; }
+  .soc-gauge-svg-wrap { width: 260px; }
+  .soc-gauge-svg { width: 260px; height: 130px; }
+  .soc-gauge-num { font-size: 2.75rem; }
   .soc-panel { padding: 1.25rem; }
   .soc-detail-stat { padding: 0.9rem 1.25rem; min-width: 90px; }
 }
