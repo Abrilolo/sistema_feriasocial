@@ -176,8 +176,8 @@ async function loadSocioProjects() {
       if (!ctx || !window.Chart) return;
 
       const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 60);
-      grad.addColorStop(0, 'rgba(129,140,248,0.22)');
-      grad.addColorStop(1, 'rgba(129,140,248,0.01)');
+      grad.addColorStop(0, 'rgba(241,202,73,0.3)');
+      grad.addColorStop(1, 'rgba(241,202,73,0.02)');
 
       new window.Chart(ctx, {
         ...CHART_CONFIG.line,
@@ -191,7 +191,7 @@ async function loadSocioProjects() {
               Math.floor(p.taken_slots * 0.8),
               p.taken_slots,
             ],
-            borderColor: '#818cf8',
+            borderColor: '#d4a800',
             backgroundColor: grad,
             fill: true,
           }],
@@ -287,9 +287,9 @@ async function loadSocioProjectDetail(projectId) {
       setTimeout(() => {
         gaugeFill.style.strokeDashoffset = 125.66 * (1 - pct);
         gaugeFill.style.stroke =
-          pct >= 0.9 ? '#f87171' :
-          pct >= 0.7 ? '#fbbf24' :
-          '#818cf8';
+          pct >= 0.9 ? '#ef4444' :
+          pct >= 0.7 ? '#f97316' :
+          '#f1ca49';
       }, 100);
       animateValue('statTakenGauge', 0, taken, 1000);
       statCapacityGauge.textContent = capacity;
