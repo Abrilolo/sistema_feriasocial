@@ -168,14 +168,5 @@
 </script>
 {% endif %}
 
-<script type="module">
-  const isAuthenticated = "{{ 'true' if is_authenticated else 'false' }}" === "true";
-  async function checkSession() {
-    try {
-      const r = await fetch('/auth/session', { credentials: 'same-origin' });
-      if (r.ok) { const d = await r.json(); if (d.authenticated && !isAuthenticated) window.location.reload(); }
-    } catch (e) { }
-  }
-  if (!isAuthenticated) checkSession();
-</script>
+
 {% endblock %}
