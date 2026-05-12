@@ -583,10 +583,11 @@
 .soc-table code {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
-  color: var(--soc-accent);
+  color: #1a3a3a;
   background: var(--soc-accent-soft);
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
+  font-weight: 600;
 }
 .soc-table strong { color: var(--soc-text); font-weight: 600; }
 
