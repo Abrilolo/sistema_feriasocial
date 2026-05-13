@@ -79,6 +79,41 @@
       <a href="/inscripcion-proyecto" class="est-btn-secondary">Registrar en Proyecto</a>
     </div>
 
+    <section class="est-projects-panel" aria-labelledby="studentProjectsTitle">
+      <div class="est-projects-header">
+        <div>
+          <span class="est-qr-section-label">Proyectos disponibles</span>
+          <h2 id="studentProjectsTitle" class="est-projects-title">Oferta de la feria</h2>
+        </div>
+        <span id="studentProjectsCount" class="est-projects-count">Cargando...</span>
+      </div>
+
+      <div class="est-project-filters">
+        <label>
+          Carrera
+          <select id="filterCareer">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <label>
+          Duración
+          <select id="filterDuration">
+            <option value="">Todas</option>
+          </select>
+        </label>
+        <label>
+          Horas
+          <select id="filterHours">
+            <option value="">Todas</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="studentProjectsList" class="est-project-list">
+        <div class="est-project-state">Cargando proyectos...</div>
+      </div>
+    </section>
+
     <hr class="est-divider" />
     <p class="est-switch-caption">No eres tú o quieres usar otra cuenta?</p>
     <div class="est-bottom-links">
@@ -110,13 +145,133 @@
 {% if is_authenticated %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script type="module">
-  import { requestJSON } from "{{ url_for('static', path='js/api.js') }}?v=3";
+  import { requestJSON, escapeHtml } from "{{ url_for('static', path='js/api.js') }}?v=3";
 
   const btnGenerateQR = document.getElementById('btnGenerateQR');
   const qrSection = document.getElementById('qrSection');
   const qrContainer = document.getElementById('qrContainer');
   const qrError = document.getElementById('qrError');
   const qrcodeDiv = document.getElementById('qrcode');
+  const projectsList = document.getElementById('studentProjectsList');
+  const projectsCount = document.getElementById('studentProjectsCount');
+  const filterCareer = document.getElementById('filterCareer');
+  const filterDuration = document.getElementById('filterDuration');
+  const filterHours = document.getElementById('filterHours');
+  let studentProjects = [];
+
+  function splitValues(value) {
+    return String(value || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function normalize(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function populateSelect(select, values) {
+    if (!select) return;
+    const current = select.value;
+    const options = [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+    select.innerHTML = '<option value="">Todas</option>';
+    options.forEach((value) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+    if (options.includes(current)) select.value = current;
+  }
+
+  function projectStatus(project) {
+    const taken = Number(project.taken_slots || 0);
+    const capacity = Number(project.capacity || 0);
+    if (capacity > 0 && taken >= capacity) return { label: 'Lleno', className: 'full' };
+    if (taken === 0) return { label: 'Vacío', className: 'empty' };
+    return { label: 'Disponible', className: 'open' };
+  }
+
+  function renderProjects() {
+    if (!projectsList) return;
+
+    const career = normalize(filterCareer?.value);
+    const duration = normalize(filterDuration?.value);
+    const hours = normalize(filterHours?.value);
+    const filtered = studentProjects.filter((project) => {
+      const careers = splitValues(project.carreras).map(normalize);
+      const careerMatch = !career || careers.some((item) => item.includes(career)) || careers.some((item) => item.includes('todas'));
+      const durationMatch = !duration || normalize(project.duracion) === duration;
+      const hoursMatch = !hours || normalize(project.horas) === hours;
+      return careerMatch && durationMatch && hoursMatch;
+    });
+
+    if (projectsCount) {
+      projectsCount.textContent = `${filtered.length} de ${studentProjects.length}`;
+    }
+
+    if (filtered.length === 0) {
+      projectsList.innerHTML = '<div class="est-project-state">No hay proyectos con esos filtros.</div>';
+      return;
+    }
+
+    projectsList.innerHTML = filtered.map((project) => {
+      const taken = Number(project.taken_slots || 0);
+      const capacity = Number(project.capacity || 0);
+      const pct = capacity > 0 ? Math.min(100, Math.round((taken / capacity) * 100)) : 0;
+      const status = projectStatus(project);
+      const available = Math.max(0, Number(project.available || 0));
+      const carreras = project.carreras || 'Todas las carreras';
+      const duracion = project.duracion || 'Sin duración definida';
+      const horas = project.horas ? `${project.horas} hrs` : 'Horas por definir';
+
+      return `
+        <article class="est-project-row">
+          <div class="est-project-main">
+            <div class="est-project-topline">
+              <span class="est-project-code">${escapeHtml(project.clave || 'N/A')}</span>
+              <span class="est-project-status est-project-status--${status.className}">${status.label}</span>
+            </div>
+            <h3>${escapeHtml(project.name || 'Proyecto')}</h3>
+            <p>${escapeHtml(project.organization || 'Socio Formador')}</p>
+            <div class="est-project-meta">
+              <span>${escapeHtml(carreras)}</span>
+              <span>${escapeHtml(duracion)}</span>
+              <span>${escapeHtml(horas)}</span>
+            </div>
+          </div>
+          <div class="est-project-capacity">
+            <strong>${taken} / ${capacity}</strong>
+            <span>${available} lugares disponibles</span>
+            <div class="est-project-bar" aria-hidden="true">
+              <div style="width:${pct}%"></div>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  async function loadStudentProjects() {
+    if (!projectsList) return;
+    try {
+      const data = await requestJSON('/public/projects');
+      studentProjects = Array.isArray(data) ? data : [];
+      populateSelect(filterCareer, studentProjects.flatMap((project) => splitValues(project.carreras)));
+      populateSelect(filterDuration, studentProjects.map((project) => project.duracion));
+      populateSelect(filterHours, studentProjects.map((project) => project.horas));
+      renderProjects();
+    } catch (err) {
+      projectsList.innerHTML = `<div class="est-project-state est-project-state--error">${escapeHtml(err.message || 'No se pudieron cargar los proyectos.')}</div>`;
+      if (projectsCount) projectsCount.textContent = 'Error';
+    }
+  }
+
+  [filterCareer, filterDuration, filterHours].forEach((select) => {
+    select?.addEventListener('change', renderProjects);
+  });
+
+  loadStudentProjects();
 
   if (btnGenerateQR) {
     btnGenerateQR.addEventListener('click', async () => {

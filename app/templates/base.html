@@ -24,7 +24,7 @@
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
-  {% if request.url.path not in ["/acceso-estudiante", "/inscripcion-proyecto", "/catalogo-proyectos"] %}
+  {% if request.url.path not in ["/preregistro", "/acceso-estudiante", "/inscripcion-proyecto", "/catalogo-proyectos"] %}
   <header class="topbar" id="mainHeader">
     <div class="brand-wrap">
       <a href="/" class="header-link">

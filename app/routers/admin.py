@@ -25,6 +25,46 @@ from app.services.excel_import_service import ExcelImportValidator
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+def _active_project_registrations_query(db: Session, project_id: uuid.UUID):
+    query = db.query(Registration).filter(Registration.project_id == project_id)
+
+    if hasattr(Registration, "status"):
+        query = query.filter(Registration.status != "CANCELLED")
+
+    return query
+
+
+def _registered_students_for_project(db: Session, project_id: uuid.UUID) -> list[dict]:
+    rows = (
+        _active_project_registrations_query(db, project_id)
+        .join(Student, Registration.student_id == Student.id)
+        .with_entities(
+            Student.id,
+            Student.matricula,
+            Student.email,
+            Student.full_name,
+            Student.career,
+            Registration.id.label("registration_id"),
+            Registration.created_at.label("registered_at"),
+        )
+        .order_by(Student.matricula.asc())
+        .all()
+    )
+
+    return [
+        {
+            "id": str(row.id),
+            "matricula": row.matricula,
+            "email": row.email,
+            "full_name": row.full_name,
+            "career": row.career,
+            "registration_id": str(row.registration_id),
+            "registered_at": row.registered_at.isoformat() if row.registered_at else None,
+        }
+        for row in rows
+    ]
+
+
 class AdminStudentCreateIn(BaseModel):
     matricula: str = Field(min_length=1, max_length=50)
     email: EmailStr
@@ -155,17 +195,9 @@ def admin_metrics(
     full_projects = 0
 
     for project in projects:
-        taken_slots_query = (
-            db.query(Registration)
-            .filter(Registration.project_id == project.id)
-        )
-
-        if hasattr(Registration, "status"):
-            taken_slots_query = taken_slots_query.filter(
-                Registration.status != "CANCELLED"
-            )
-
+        taken_slots_query = _active_project_registrations_query(db, project.id)
         taken_slots = taken_slots_query.count()
+        registered_students = _registered_students_for_project(db, project.id)
         remaining_slots = max(project.capacity - taken_slots, 0)
 
         if project.capacity > 0 and taken_slots >= project.capacity:
@@ -184,6 +216,7 @@ def admin_metrics(
                 "remaining_slots": remaining_slots,
                 "occupancy_percent": occupancy_percent,
                 "is_active": project.is_active,
+                "registered_students": registered_students,
             }
         )
 
@@ -384,17 +417,9 @@ def list_all_projects(
     for project in projects:
         owner = db.query(User).filter(User.id == project.owner_user_id).first()
 
-        taken_slots_query = (
-            db.query(Registration)
-            .filter(Registration.project_id == project.id)
-        )
-
-        if hasattr(Registration, "status"):
-            taken_slots_query = taken_slots_query.filter(
-                Registration.status != "CANCELLED"
-            )
-
+        taken_slots_query = _active_project_registrations_query(db, project.id)
         taken_slots = taken_slots_query.count()
+        registered_students = _registered_students_for_project(db, project.id)
         remaining_slots = max(project.capacity - taken_slots, 0)
 
         occupancy_percent = 0
@@ -410,6 +435,7 @@ def list_all_projects(
                 "taken_slots": taken_slots,
                 "remaining_slots": remaining_slots,
                 "occupancy_percent": occupancy_percent,
+                "registered_students": registered_students,
                 "is_active": project.is_active,
                 "created_at": project.created_at.isoformat(),
                 "periodo": getattr(project, "periodo", None),

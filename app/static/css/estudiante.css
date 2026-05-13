@@ -46,8 +46,8 @@ body.est-student-page main.container {
 }
 
 .est-unified.est-wide {
-  max-width: 900px;
-  grid-template-columns: 1fr 1.6fr;
+  max-width: 1120px;
+  grid-template-columns: 0.9fr 1.9fr;
 }
 
 @keyframes est-rise {
@@ -413,6 +413,182 @@ body.est-student-page main.container {
 .est-link-danger:hover { background: #fff1f2; }
 
 /* ── QR SECTION ──────────────────────────────────────────────── */
+.est-projects-panel {
+  margin: 0 0 1.4rem;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+.est-projects-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.est-projects-title {
+  margin: 0;
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  line-height: 1.1;
+  color: #0f172a;
+}
+.est-projects-count {
+  flex-shrink: 0;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+.est-project-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.9rem;
+}
+.est-project-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.est-project-filters select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+}
+.est-project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+.est-project-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.9rem;
+}
+.est-project-main {
+  min-width: 0;
+}
+.est-project-topline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+.est-project-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #64748b;
+}
+.est-project-status {
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+.est-project-status--open {
+  background: #dcfce7;
+  color: #15803d;
+}
+.est-project-status--empty {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.est-project-status--full {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.est-project-row h3 {
+  margin: 0 0 0.2rem;
+  color: #0f172a;
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+.est-project-row p {
+  margin: 0 0 0.55rem;
+  color: #64748b;
+  font-size: 0.72rem;
+}
+.est-project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.est-project-meta span {
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.64rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.est-project-capacity {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.est-project-capacity strong {
+  color: #0f172a;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+.est-project-capacity span {
+  color: #94a3b8;
+  font-size: 0.66rem;
+}
+.est-project-bar {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+.est-project-bar div {
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+.est-project-state {
+  padding: 1.2rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #64748b;
+  text-align: center;
+  font-size: 0.78rem;
+}
+.est-project-state--error {
+  border-color: #fecdd3;
+  color: #be123c;
+  background: #fff1f2;
+}
+
 .est-qr-section {
   display: none;
   margin-top: 1.25rem;
@@ -555,6 +731,9 @@ body.est-student-page main.container {
   .est-brand-desc, .est-brand-features, .est-brand-bottom { display: none; }
   .est-brand-heading { font-size: 1.4rem; }
   .est-form-col { padding: 1.75rem 1.75rem; }
+  .est-project-filters { grid-template-columns: 1fr; }
+  .est-project-row { grid-template-columns: 1fr; }
+  .est-project-list { max-height: 420px; }
 }
 
 @media (max-width: 420px) {

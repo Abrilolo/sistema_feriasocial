@@ -242,8 +242,13 @@ def get_projects(
 
     output = []
     for p, u in results:
-        current_regs = db.query(Registration).filter(Registration.project_id == p.id).count()
+        current_regs_query = db.query(Registration).filter(Registration.project_id == p.id)
+        if hasattr(Registration, "status"):
+            current_regs_query = current_regs_query.filter(Registration.status != "CANCELLED")
+
+        current_regs = current_regs_query.count()
         available = max(0, p.capacity - current_regs)
+        occupancy_percent = round((current_regs / p.capacity) * 100, 2) if p.capacity > 0 else 0
 
         output.append({
             "id": str(p.id),
@@ -252,10 +257,14 @@ def get_projects(
             "organization": u.organization_name or "Socio Formador",
             "image_url": f"/static/img/projects/{p.image_filename}" if p.image_filename else None,
             "capacity": p.capacity,
+            "taken_slots": current_regs,
             "available": available,
+            "occupancy_percent": occupancy_percent,
+            "is_full": p.capacity > 0 and current_regs >= p.capacity,
             "periodo": p.periodo,
             "carreras": p.carreras_permitidas,
             "modalidad": p.modalidad,
+            "duracion": p.duracion,
             "horas": p.horas_acreditar,
             "clave": p.clave_programa or "N/A",
         })

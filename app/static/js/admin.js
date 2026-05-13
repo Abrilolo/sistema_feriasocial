@@ -216,6 +216,29 @@ function renderAdminCharts(m, occupancyData) {
   }
 }
 
+function renderProjectStudentsList(students = []) {
+  if (!Array.isArray(students) || students.length === 0) {
+    return `<span class="muted">Sin inscritos</span>`;
+  }
+
+  const items = students.map(student => {
+    const name = escapeHtml(student.full_name || "Alumno sin nombre");
+    const matricula = escapeHtml(student.matricula || "");
+    const email = escapeHtml(student.email || "");
+    const career = student.career ? `<span class="adm-project-students__career">${escapeHtml(student.career)}</span>` : "";
+
+    return `
+      <li class="adm-project-students__item" title="${email}">
+        <span class="adm-project-students__name">${name}</span>
+        <span class="adm-project-students__meta">${matricula}${email ? ` &middot; ${email}` : ""}</span>
+        ${career}
+      </li>
+    `;
+  }).join("");
+
+  return `<ul class="adm-project-students">${items}</ul>`;
+}
+
 async function loadAdminMetrics() {
   try {
     const data = await requestJSON("/admin/metrics", { headers: getAuthHeaders() });
@@ -232,7 +255,7 @@ async function loadAdminMetrics() {
     const tbody = document.getElementById("projectsTableBody");
     tbody.innerHTML = "";
     if (data.project_occupancy.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay proyectos registrados.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay proyectos registrados.</td></tr>`;
       return;
     }
 
@@ -252,6 +275,7 @@ async function loadAdminMetrics() {
       const safeTaken = escapeHtml(p.taken_slots);
       const safeCapacity = escapeHtml(p.capacity);
       const safePct = escapeHtml(pct);
+      const registeredStudentsHtml = renderProjectStudentsList(p.registered_students);
 
       tr.innerHTML = `
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">
@@ -259,6 +283,7 @@ async function loadAdminMetrics() {
           ${!p.is_active ? badgeLabel(false, "Activo", "Inactivo") : ""}
         </td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safeTaken} / ${safeCapacity}</td>
+        <td class="adm-project-students-cell" style="padding: 10px; border-bottom: 1px solid var(--border);">${registeredStudentsHtml}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">${safePct}% ${barHtml}</td>
         <td style="padding: 10px; border-bottom: 1px solid var(--border);">
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
