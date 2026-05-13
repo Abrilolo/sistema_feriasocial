@@ -332,7 +332,7 @@ export function createProgressBar(container, options = {}) {
   }
 
   html += `
-    <div style="background: #e2e8f0; border-radius: 99px; overflow: hidden; height: ${heights[size]};">
+    <div style="background: rgb(149, 192, 247); border-radius: 99px; overflow: hidden; height: ${heights[size]};">
       <div class="progress-fill" style="
         width: ${percentage}%;
         height: 100%;
