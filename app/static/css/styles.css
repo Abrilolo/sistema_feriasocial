@@ -424,11 +424,11 @@ text-large { font-size: var(--text-lg); }
   gap: var(--space-5);
   flex-wrap: wrap;
   padding: var(--space-4) var(--space-6);
-  background: linear-gradient(135deg, #fffdf0 0%, #fefce8 50%, #f8fafc 100%);
+  background: linear-gradient(135deg, var(--bg-soft) 0%, var(--bg) 50%, var(--panel-soft) 100%);
   backdrop-filter: var(--backdrop-blur);
-  box-shadow: 0 2px 8px rgba(241,202,73,0.1);
-  border-bottom: 1px solid #e2e8f0;
-  border-left: 4px solid var(--accent);
+  box-shadow: 0 2px 8px var(--shadow-accent);
+  border-bottom: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
 }
 
 .brand-wrap {
@@ -460,13 +460,13 @@ text-large { font-size: var(--text-lg); }
 }
 
 .brand-title {
-  color: #0f172a;
+  color: var(--text);
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
 }
 
 .brand-subtitle {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: var(--text-sm);
 }
 
@@ -478,7 +478,7 @@ text-large { font-size: var(--text-lg); }
 }
 
 .nav a {
-  color: #0f172a;
+  color: var(--text);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
@@ -487,18 +487,18 @@ text-large { font-size: var(--text-lg); }
 }
 
 .nav a:hover {
-  background: rgba(241,202,73,0.15);
-  color: #0f172a;
+  background: var(--accent-soft);
+  color: var(--text);
   transform: translateY(-1px);
 }
 
 .nav-logout {
-  background: rgba(241,202,73,0.1);
+  background: var(--accent-soft);
 }
 
 .nav-logout:hover {
   background: rgba(220,38,38,0.15) !important;
-  color: #dc2626;
+  color: var(--error);
 }
 
 /* Formularios */
@@ -553,8 +553,8 @@ input:hover, select:hover, textarea:hover {
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(241,202,73,0.12);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   transform: translateY(-1px);
 }
 
@@ -575,26 +575,26 @@ button, .btn {
   gap: var(--space-2);
   border: none;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #f1ca49, #f0b800);
-  color: #0f172a;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: var(--text);
   padding: var(--space-3) var(--space-5);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 4px 12px rgba(241,202,73,0.3);
+  box-shadow: 0 4px 12px var(--shadow-accent);
   text-decoration: none;
 }
 
 button:hover, .btn:hover {
-  background: linear-gradient(135deg, #f0b800, #e6a600);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-darker));
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(241,202,73,0.4);
+  box-shadow: 0 8px 20px var(--shadow-accent);
 }
 
 button:active, .btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(241,202,73,0.2);
+  box-shadow: 0 2px 8px var(--shadow-accent);
 }
 
 .btn-secondary {

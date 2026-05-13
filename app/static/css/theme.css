@@ -1,44 +1,13 @@
 /* ─────────────────────────────────────────────────────────────
    UNIFIED THEME - Sistema Feria Social
-   Color palette, typography, and component styles for all pages
+   Typography and reusable components
+   (Colors come from theme-colors.css)
    ───────────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-/* ── UNIFIED COLOR PALETTE ─────────────────────────────────── */
+/* ── TYPOGRAPHY ────────────────────────────────────────────── */
 :root {
-  /* Primary accent - Yellow (Tec premium) */
-  --accent:           #f1ca49;
-  --accent-2:         rgb(255, 252, 206);
-  --accent-soft:      rgba(255, 218, 8, 0.5);
-  --accent-glow:      rgba(255, 242, 0, 0.18);
-  --accent-dark:      #f0b800;
-  --accent-darker:    #e6a600;
-
-  /* Backgrounds */
-  --bg:               #f1f5f9;
-  --bg-soft:          #fffdf0;
-  --panel:            #ffffff;
-  --panel-soft:       #f8fafc;
-
-  /* Text colors */
-  --text:             #0f172a;
-  --text-secondary:   #334155;
-  --text-muted:       #64748b;
-
-  /* Borders */
-  --border:           #e2e8f0;
-  --border-light:     rgba(239, 241, 99, 0.3);
-
-  /* State colors */
-  --success:          #059669;
-  --success-bg:       #ecfdf5;
-  --warning:          #d97706;
-  --warning-bg:       #fffbeb;
-  --error:            #dc2626;
-  --error-bg:         #fef2f2;
-
-  /* Typography */
   --font-display:     'Syne', sans-serif;
   --font-body:        'Inter', system-ui, sans-serif;
   --font-mono:        'JetBrains Mono', monospace;
@@ -95,7 +64,7 @@ h3 {
 
 /* ── UNIFIED BUTTONS ───────────────────────────────────────── */
 button, .btn, input[type="submit"], input[type="button"] {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: var(--text);
   border: none;
   border-radius: 12px;
@@ -104,7 +73,7 @@ button, .btn, input[type="submit"], input[type="button"] {
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(241,202,73,0.3);
+  box-shadow: 0 4px 12px var(--shadow-accent);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -114,14 +83,14 @@ button, .btn, input[type="submit"], input[type="button"] {
 }
 
 button:hover, .btn:hover, input[type="submit"]:hover, input[type="button"]:hover {
-  background: linear-gradient(135deg, var(--accent-dark), var(--accent-darker));
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-darker));
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(241,202,73,0.4);
+  box-shadow: 0 8px 20px var(--shadow-accent);
 }
 
 button:active, .btn:active, input[type="submit"]:active, input[type="button"]:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(241,202,73,0.2);
+  box-shadow: 0 2px 8px var(--shadow-accent);
 }
 
 button:disabled, .btn:disabled, input[type="submit"]:disabled, input[type="button"]:disabled {

@@ -17,9 +17,13 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="{{ url_for('static', path='img/logo-servicio-social.png') }}" />
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', path='css/theme.css') }}?v=1" />
+  <!-- Styles (load order matters for CSS variable cascade) -->
+  <!-- 1. Color theme by page (overrides :root variables based on body_class) -->
+  <link rel="stylesheet" href="{{ url_for('static', path='css/theme-colors.css') }}?v=1" />
+  <!-- 2. Global components using color variables -->
   <link rel="stylesheet" href="{{ url_for('static', path='css/styles.css') }}?v=13" />
+  <!-- 3. Shared theme utilities -->
+  <link rel="stylesheet" href="{{ url_for('static', path='css/theme.css') }}?v=1" />
 
   {% block head %}{% endblock %}
 </head>

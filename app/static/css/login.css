@@ -21,10 +21,10 @@
   width: 100%;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--primary);
   border-radius: 20px;
   padding: 3rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 16px var(--shadow-accent), 0 8px 24px rgba(0,0,0,0.06);
   animation: fadeInUp 0.5s ease;
 }
 
