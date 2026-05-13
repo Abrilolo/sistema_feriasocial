@@ -1,0 +1,321 @@
+/* ─────────────────────────────────────────────────────────────
+   UNIFIED THEME - Sistema Feria Social
+   Color palette, typography, and component styles for all pages
+   ───────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── UNIFIED COLOR PALETTE ─────────────────────────────────── */
+:root {
+  /* Primary accent - Yellow (Tec premium) */
+  --accent:           #f1ca49;
+  --accent-2:         rgb(255, 252, 206);
+  --accent-soft:      rgba(255, 218, 8, 0.5);
+  --accent-glow:      rgba(255, 242, 0, 0.18);
+  --accent-dark:      #f0b800;
+  --accent-darker:    #e6a600;
+
+  /* Backgrounds */
+  --bg:               #f1f5f9;
+  --bg-soft:          #fffdf0;
+  --panel:            #ffffff;
+  --panel-soft:       #f8fafc;
+
+  /* Text colors */
+  --text:             #0f172a;
+  --text-secondary:   #334155;
+  --text-muted:       #64748b;
+
+  /* Borders */
+  --border:           #e2e8f0;
+  --border-light:     rgba(239, 241, 99, 0.3);
+
+  /* State colors */
+  --success:          #059669;
+  --success-bg:       #ecfdf5;
+  --warning:          #d97706;
+  --warning-bg:       #fffbeb;
+  --error:            #dc2626;
+  --error-bg:         #fef2f2;
+
+  /* Typography */
+  --font-display:     'Syne', sans-serif;
+  --font-body:        'Inter', system-ui, sans-serif;
+  --font-mono:        'JetBrains Mono', monospace;
+}
+
+/* ── PAGE BACKGROUNDS ──────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* ── HEADINGS ──────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text);
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+/* ── UNIFIED CARDS/PANELS ──────────────────────────────────── */
+.card, .panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover, .panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.card.with-accent, .panel.with-accent {
+  border-left: 4px solid var(--accent);
+}
+
+/* ── UNIFIED BUTTONS ───────────────────────────────────────── */
+button, .btn, input[type="submit"], input[type="button"] {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: var(--text);
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(241,202,73,0.3);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: inherit;
+}
+
+button:hover, .btn:hover, input[type="submit"]:hover, input[type="button"]:hover {
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent-darker));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(241,202,73,0.4);
+}
+
+button:active, .btn:active, input[type="submit"]:active, input[type="button"]:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(241,202,73,0.2);
+}
+
+button:disabled, .btn:disabled, input[type="submit"]:disabled, input[type="button"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Button variants */
+.btn-secondary {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.btn-secondary:hover {
+  background: var(--panel-soft);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #e11d48, #c41245);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.btn-ghost:hover {
+  background: rgba(241,202,73,0.1);
+  border-color: var(--accent);
+}
+
+/* ── UNIFIED FORM INPUTS ───────────────────────────────────── */
+input, textarea, select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+input:hover, textarea:hover, select:hover {
+  border-color: var(--border-light);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(241,202,73,0.12);
+  transform: translateY(-1px);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── FORM GROUPS ───────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── UNIFIED SECTION LABELS ────────────────────────────────── */
+.section-label, .label-mono {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.section-label::after, .label-mono::after {
+  content: '';
+  display: block;
+  width: 1.75rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* ── ERROR/SUCCESS/WARNING MESSAGES ────────────────────────── */
+.error, .error-message {
+  background: var(--error-bg);
+  border: 1px solid rgba(220,38,38,0.2);
+  border-left: 3px solid var(--error);
+  border-radius: 10px;
+  color: var(--error);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.success, .success-message {
+  background: var(--success-bg);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-left: 3px solid var(--success);
+  border-radius: 10px;
+  color: var(--success);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.warning, .warning-message {
+  background: var(--warning-bg);
+  border: 1px solid rgba(217,119,6,0.2);
+  border-left: 3px solid var(--warning);
+  border-radius: 10px;
+  color: var(--warning);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* ── BADGES ────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 99px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── UTILITIES ─────────────────────────────────────────────── */
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-soft {
+  background: var(--bg-soft);
+}
+
+.rounded-lg {
+  border-radius: 12px;
+}
+
+.rounded-xl {
+  border-radius: 20px;
+}
+
+.shadow-soft {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+}

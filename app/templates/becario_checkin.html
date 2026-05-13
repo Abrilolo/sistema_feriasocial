@@ -1,29 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Panel Becario{% endblock %}
+{% block title %}Panel Becario - Check-in{% endblock %}
+{% block body_class %}checkin-page{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/theme.css') }}?v=1" />
+{% endblock %}
 
 {% block content %}
-  <div class="panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
-    <h1>📸 Escáner de Acceso</h1>
-    <p class="muted">Apunta la cámara al código QR del estudiante para realizar el check-in.</p>
-    
-    <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-top: 20px; border: 2px solid var(--border); background: #eee; min-height: 300px;"></div>
-    
-    <div id="cameraControls" style="margin-top: 20px;">
-        <button id="btnStartCamera" class="btn-primary" style="width: 100%;">Iniciar Cámara</button>
+<div style="max-width: 700px; margin: 2rem auto; padding: 0 1rem;">
+  <div class="card with-accent" style="text-align: center;">
+    <div class="section-label" style="justify-content: center; margin-bottom: 1rem;">
+      <span>Entrada</span>
     </div>
-    
-    <div id="scannerResult" style="margin-top: 20px; min-height: 80px;">
-       <div id="scannedInfo" style="display:none; padding: 20px; border-radius: 12px; background: var(--surface-soft); text-align: left;">
-          <h3 id="resName" style="margin-top: 0;">-</h3>
-          <p id="resMatricula" class="muted">-</p>
+
+    <h1 style="margin-top: 0; margin-bottom: 0.5rem;">📸 Escáner de Acceso</h1>
+    <p class="text-muted" style="margin: 0 0 2rem 0;">Apunta la cámara al código QR del estudiante para realizar el check-in.</p>
+
+    <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 2rem; border: 2px solid var(--border); background: #f0f0f0; min-height: 300px;"></div>
+
+    <div id="cameraControls" style="margin-bottom: 2rem;">
+        <button id="btnStartCamera" class="btn" style="width: 100%; padding: 1rem;">Iniciar Cámara</button>
+    </div>
+
+    <div id="scannerResult" style="margin-bottom: 2rem; min-height: 80px;">
+       <div id="scannedInfo" style="display:none; padding: 1.5rem; border-radius: 12px; background: rgba(5, 150, 105, 0.05); border-left: 4px solid var(--success); text-align: left;">
+          <h3 id="resName" style="margin-top: 0; color: var(--text);">-</h3>
+          <p id="resMatricula" class="text-muted" style="margin: 0.25rem 0 1rem 0;">-</p>
           <div id="resStatus" style="margin-top: 10px;"></div>
        </div>
     </div>
-    <div id="scannerMessage" style="display:none; margin-top: 20px; padding: 15px; border-radius: 8px;"></div>
-    
-    <button id="btnRestartScanner" class="btn-primary" style="display:none; margin-top: 20px; width: 100%;">Escanear otro código</button>
+
+    <div id="scannerMessage" style="display:none; margin-bottom: 2rem; padding: 1rem; border-radius: 8px;"></div>
+
+    <button id="btnRestartScanner" class="btn" style="display:none; width: 100%; padding: 1rem;">Escanear otro código</button>
   </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
