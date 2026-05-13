@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGIN PAGE — Premium Design
+   Feria Social · Tecnológico de Monterrey
+   ═══════════════════════════════════════════════════════════════ */
+
+/* === PAGE BACKGROUND === */
+body {
+  background:
+    radial-gradient(ellipse at 25% 40%, rgba(37, 99, 235, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 70%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    #eef2f7 !important;
+}
+
+/* === LAYOUT === */
+.login-page {
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  position: relative;
+  overflow: hidden;
+}
+
+/* === LOGIN CONTAINER === */
+.login-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 520px;
+  animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === LOGIN CARD === */
+.login-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 20px 48px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  max-width: 520px;
+}
+
+.login-card:hover {
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 25px 60px rgba(15, 23, 42, 0.15),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+  transform: translateY(-4px);
+}
+
+/* === HEADER SECTION === */
+.login-header {
+  position: relative;
+  padding: 3.5rem 2.5rem 3rem;
+  background: linear-gradient(155deg, #1e3a8a 0%, #1d4ed8 50%, #3b82f6 100%);
+  border-bottom: none;
+  overflow: hidden;
+}
+
+.login-header::before {
+  content: '';
+  position: absolute;
+  top: -25%;
+  right: -30%;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-header::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -20%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.035);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Logo wrapper */
+.login-logo-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;        /* FIX: "right" no es válido, debe ser "center" */
+  width: fit-content;         /* FIX: evita que el wrap se estire al 100% */
+  margin: 0 auto 1rem;        /* FIX: centra el wrap horizontalmente */
+  z-index: 1;
+}
+
+.login-logo {
+  width: min(300px, 70vw);
+  height: auto;
+  display: block;
+  filter: brightness(0) invert(1) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
+  opacity: 0.9;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  object-fit: contain;
+}
+
+.login-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Header text */
+.login-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.5rem;
+  text-align: center;
+  line-height: 1.15;
+  position: relative;
+  z-index: 1;
+}
+
+.login-header p {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+}
+
+/* === FORM SECTION === */
+.login-form-wrap {
+  padding: 2.25rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Form groups */
+.login-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.login-form label {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Input fields */
+.login-form input {
+  padding: 0.875rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.9rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  outline: none;
+}
+
+.login-form input::placeholder {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.login-form input:hover {
+  border-color: #93c5fd;
+  background: white;
+}
+
+.login-form input:focus {
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* Error message */
+.login-error {
+  padding: 0.875rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease;
+}
+
+.login-error::before {
+  content: '⚠';
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === SUBMIT BUTTON === */
+.login-submit {
+  width: 100%;
+  padding: 0.95rem 1.25rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-family: 'Inter', inherit;
+}
+
+.login-submit:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.login-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* === FOOTER TEXT === */
+.login-footer {
+  padding: 1.5rem 2.25rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.login-footer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #0ea5e9;
+  margin-bottom: 0.3rem;
+  display: block;
+  text-transform: uppercase;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  .login-container {
+    max-width: 100%;
+  }
+
+  .login-card {
+    border-radius: 20px;
+  }
+
+  .login-header {
+    padding: 2.25rem 2rem 2rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.875rem;
+  }
+
+  .login-form-wrap {
+    padding: 2rem;
+  }
+
+  .login-logo {
+    width: min(240px, 72vw);
+  }
+}
+
+@media (max-width: 380px) {
+  .login-header {
+    padding: 1.75rem 1.5rem 1.5rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-header p {
+    font-size: 0.85rem;
+  }
+
+  .login-form-wrap {
+    padding: 1.5rem;
+  }
+
+  .login-logo {
+    width: min(210px, 76vw);
+  }
+}

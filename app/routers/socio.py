@@ -294,7 +294,12 @@ def get_project_students(
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
     records = (
-        db.query(Registration, Student)
+        db.query(
+            Registration,
+            Student.matricula,
+            Student.email,
+            Student.full_name,
+        )
         .join(Student, Registration.student_id == Student.id)
         .filter(Registration.project_id == project_id)
         .all()
@@ -302,12 +307,12 @@ def get_project_students(
 
     result = []
 
-    for reg, student in records:
+    for reg, matricula, email, full_name in records:
         result.append(
             {
-                "matricula": student.matricula,
-                "email": student.email,
-                "full_name": getattr(student, "full_name", ""),
+                "matricula": matricula,
+                "email": email,
+                "full_name": full_name or "",
                 "status": getattr(reg, "status", ""),
                 "registered_at": reg.created_at,
             }
@@ -335,7 +340,12 @@ def export_project_students(
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
     records = (
-        db.query(Registration, Student)
+        db.query(
+            Registration,
+            Student.matricula,
+            Student.email,
+            Student.full_name,
+        )
         .join(Student, Registration.student_id == Student.id)
         .filter(Registration.project_id == project_id)
         .all()
@@ -346,12 +356,12 @@ def export_project_students(
 
     writer.writerow(["Matricula", "Correo", "Nombre"])
 
-    for reg, student in records:
+    for reg, matricula, email, full_name in records:
         writer.writerow(
             [
-                student.matricula,
-                student.email,
-                getattr(student, "full_name", ""),
+                matricula,
+                email,
+                full_name or "",
             ]
         )
 

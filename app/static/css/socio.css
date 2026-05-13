@@ -170,6 +170,41 @@
 }
 .soc-panel-header-right { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
+.soc-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.soc-heading-icon,
+.soc-stat-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.soc-heading-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+.soc-heading-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.soc-heading-icon--amber,
+.soc-heading-icon--blue,
+.soc-heading-icon--green,
+.soc-heading-icon--purple {
+  background: rgba(241, 202, 73, 0.16);
+  border-color: rgba(241, 202, 73, 0.28);
+  color: #d4a800;
+}
+
 /* ── Error ───────────────────────────────────────────────── */
 .soc-error {
   display: none;
@@ -268,6 +303,23 @@
 /* stat chips */
 .soc-stats-row { display: flex; gap: 1.25rem; flex-wrap: wrap; }
 .soc-stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.soc-stat-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.soc-stat-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(241, 202, 73, 0.14);
+  border-color: rgba(241, 202, 73, 0.24);
+  color: #d4a800;
+}
+.soc-stat-icon svg {
+  width: 13px;
+  height: 13px;
+}
 .soc-stat-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.575rem;
@@ -340,6 +392,11 @@
   white-space: nowrap;
 }
 .soc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.soc-btn-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
 
 .soc-btn-primary {
   background: linear-gradient(135deg, #d4a800, #f1ca49);
@@ -485,6 +542,20 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(241,202,73,0.18);
   border-top-color: var(--soc-accent);
+}
+.soc-detail-stat-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(241, 202, 73, 0.16);
+  border: 1px solid rgba(241, 202, 73, 0.28);
+  color: #d4a800;
+}
+.soc-detail-stat-icon svg {
+  width: 16px;
+  height: 16px;
 }
 .soc-detail-stat-label {
   font-family: 'JetBrains Mono', monospace;

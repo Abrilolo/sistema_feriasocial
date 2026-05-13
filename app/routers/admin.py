@@ -18,6 +18,7 @@ from app.models.project import Project
 from app.models.checkin import Checkin
 from app.models.registration import Registration
 from app.models.temp_code import TempCode
+from app.models.pre_registration import PreRegistration
 
 from app.services.excel_import_service import ExcelImportValidator
 
@@ -343,6 +344,7 @@ def create_project(
         poblacion_atendida=payload.poblacion_atendida.strip() if payload.poblacion_atendida else None,
         horas_acreditar=payload.horas_acreditar.strip() if payload.horas_acreditar else None,
         comentarios_adicionales=payload.comentarios_adicionales.strip() if payload.comentarios_adicionales else None,
+        clave_programa=payload.clave_programa.strip() if payload.clave_programa else None,
     )
 
     try:
@@ -423,6 +425,7 @@ def list_all_projects(
                 "horas_acreditar": getattr(project, "horas_acreditar", None),
                 "comentarios_adicionales": getattr(project, "comentarios_adicionales", None),
                 "clave_programa": getattr(project, "clave_programa", None),
+                "image_filename": getattr(project, "image_filename", None),
                 "owner": {
                     "id": str(owner.id) if owner else None,
                     "email": owner.email if owner else None,
@@ -527,12 +530,22 @@ def list_all_students(
         if registration:
             project = db.query(Project).filter(Project.id == registration.project_id).first()
 
+        pre_registration = None
+        if not student.phone:
+            pre_registration = db.query(PreRegistration).filter(
+                (PreRegistration.email == student.email)
+                | (PreRegistration.matricula == student.matricula)
+            ).first()
+
+        phone = student.phone or (pre_registration.phone if pre_registration else None)
+
         results.append(
             {
                 "id": str(student.id),
                 "matricula": student.matricula,
                 "email": student.email,
                 "full_name": student.full_name,
+                "phone": phone,
                 "created_at": student.created_at.isoformat(),
                 "has_checkin": checkin is not None,
                 "checkin_at": checkin.checked_in_at.isoformat() if checkin else None,
@@ -656,11 +669,27 @@ def update_project(
             detail="Proyecto no encontrado.",
         )
 
-    update_data = payload.dict(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
     if not update_data:
         return {"ok": True, "message": "No hay datos para actualizar."}
 
+    if "owner_user_id" in update_data and update_data["owner_user_id"]:
+        owner = db.query(User).filter(User.id == update_data["owner_user_id"]).first()
+        if not owner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="El owner_user_id no corresponde a ningÃºn usuario.",
+            )
+        if owner.role not in {"SOCIO", "ADMIN"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El owner del proyecto debe tener rol SOCIO o ADMIN.",
+            )
+        update_data["owner_user_id"] = owner.id
+
     for key, value in update_data.items():
+        if isinstance(value, str):
+            value = value.strip() or None
         setattr(project, key, value)
 
     try:

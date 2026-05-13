@@ -470,6 +470,9 @@ class StudentAuthService:
             if not student.career and pre_reg.career_id:
                 student.career = pre_reg.career.nombre_carrera if pre_reg.career else None
 
+            if not student.phone and pre_reg.phone:
+                student.phone = pre_reg.phone
+
             db.commit()
 
             # Eliminar el pre-registro después de usarlo

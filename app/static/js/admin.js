@@ -356,6 +356,7 @@ function renderStudentsTable(studentsList) {
         await requestJSON(`/admin/registrations/${regId}/cancel`, { method: "PATCH", headers: getAuthHeaders() });
         loadAllStudents();
         loadAdminMetrics();
+        loadAllProjectsFull();
       } catch (err) {
         alert("Error al cancelar: " + err.message);
       }
@@ -408,6 +409,43 @@ async function loadAllProjectsFull() {
   }
 }
 
+function renderEditCarreras() {
+  const editCarrerasList = document.getElementById("editCarrerasList");
+  if (!editCarrerasList) return;
+
+  editCarrerasList.innerHTML = "";
+  if (editCarrerasArr.length === 0) {
+    editCarrerasList.innerHTML = '<span class="muted" style="font-size: 0.85rem;">Sin carreras especÃ­ficas...</span>';
+    return;
+  }
+
+  editCarrerasArr.forEach((carrera, index) => {
+    const badge = document.createElement("span");
+    badge.style.cssText = "background: var(--primary); color: white; padding: 4px 10px; border-radius: 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;";
+    badge.innerHTML = `${escapeHtml(carrera)} <span style="cursor:pointer; font-weight:bold; font-size:1.1rem; line-height: 1;" data-index="${index}">&times;</span>`;
+    editCarrerasList.appendChild(badge);
+  });
+
+  editCarrerasList.querySelectorAll("span[data-index]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = parseInt(e.target.dataset.index, 10);
+      editCarrerasArr.splice(idx, 1);
+      renderEditCarreras();
+    });
+  });
+}
+
+function addEditCarrera() {
+  const input = document.getElementById("editProjCarreraInput");
+  if (!input) return;
+  const val = input.value.trim().toUpperCase();
+  if (val && !editCarrerasArr.includes(val)) {
+    editCarrerasArr.push(val);
+    renderEditCarreras();
+  }
+  input.value = "";
+}
+
 // Open Edit Modal
 function openEditProjectModal(id) {
   const proj = allProjectsFull.find(p => p.id === id);
@@ -433,6 +471,13 @@ function openEditProjectModal(id) {
   document.getElementById("editProjHoras").value = proj.horas_acreditar || "";
   document.getElementById("editProjPoblacion").value = proj.poblacion_atendida || "";
   document.getElementById("editProjDesc").value = proj.comentarios_adicionales || proj.description || "";
+
+  const preview = document.getElementById("editProjImagePreview");
+  if (preview) {
+    preview.src = proj.image_filename ? `/static/img/projects/${proj.image_filename}?t=${Date.now()}` : "";
+  }
+  const imageInput = document.getElementById("editProjImageInput");
+  if (imageInput) imageInput.value = "";
 
   if (proj.carreras_permitidas) {
     editCarrerasArr = proj.carreras_permitidas.split(",").map(c => c.trim()).filter(c => c);
@@ -475,16 +520,29 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        let csvContent = "Matricula;Correo;Nombre Completo;Check-In;Registrado a Proyecto;Clave del Programa;Nombre del Programa\n";
+        const csvCell = (value) => {
+          if (value === null || value === undefined) return "";
+          return `"${String(value).replace(/"/g, '""')}"`;
+        };
+
+        let csvContent = "Matricula;Correo;Nombre Completo;Telefono;Check-In;Registrado a Proyecto;Clave del Programa;Nombre del Programa\n";
 
         allStudents.forEach(s => {
           const checkinStr = s.has_checkin ? "SI" : "NO";
           const regStr = s.is_registered ? "SI" : "NO";
-          const projName = s.project ? `"${s.project.name.replace(/"/g, '""')}"` : "";
-          const projClave = s.project && s.project.clave_programa ? `"${s.project.clave_programa.replace(/"/g, '""')}"` : "";
-          const nameStr = s.full_name ? `"${s.full_name.replace(/"/g, '""')}"` : "";
+          const projName = s.project ? s.project.name : "";
+          const projClave = s.project && s.project.clave_programa ? s.project.clave_programa : "";
 
-          csvContent += `${s.matricula};${s.email};${nameStr};${checkinStr};${regStr};${projClave};${projName}\n`;
+          csvContent += [
+            csvCell(s.matricula),
+            csvCell(s.email),
+            csvCell(s.full_name),
+            csvCell(s.phone),
+            csvCell(checkinStr),
+            csvCell(regStr),
+            csvCell(projClave),
+            csvCell(projName),
+          ].join(";") + "\n";
         });
 
         // \uFEFF to support UTF-8 formatting seamlessly in excel
@@ -654,7 +712,122 @@ document.addEventListener("DOMContentLoaded", () => {
         adminAddProjectForm.reset();
         carrerasArr = []; renderCarreras();
         loadAdminMetrics();
+        loadAllProjectsFull();
       } catch (error) { showMessage("adminAddProjectMessage", error.message, "error"); }
+    });
+  }
+
+  const closeEditProjectModal = document.getElementById("closeEditProjectModal");
+  if (closeEditProjectModal) {
+    closeEditProjectModal.addEventListener("click", () => {
+      document.getElementById("editProjectModal").style.display = "none";
+    });
+  }
+
+  const editProjectModal = document.getElementById("editProjectModal");
+  if (editProjectModal) {
+    editProjectModal.addEventListener("click", (e) => {
+      if (e.target === editProjectModal) {
+        editProjectModal.style.display = "none";
+      }
+    });
+  }
+
+  const editImageInput = document.getElementById("editProjImageInput");
+  if (editImageInput) {
+    editImageInput.addEventListener("change", () => {
+      const file = editImageInput.files?.[0];
+      const preview = document.getElementById("editProjImagePreview");
+      if (file && preview) {
+        preview.src = URL.createObjectURL(file);
+      }
+    });
+  }
+
+  const btnEditAddCarrera = document.getElementById("btnEditAddCarrera");
+  const editCarreraInput = document.getElementById("editProjCarreraInput");
+  if (btnEditAddCarrera && editCarreraInput) {
+    btnEditAddCarrera.addEventListener("click", addEditCarrera);
+    editCarreraInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addEditCarrera();
+      }
+    });
+  }
+
+  const adminEditProjectForm = document.getElementById("adminEditProjectForm");
+  if (adminEditProjectForm) {
+    adminEditProjectForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hideMessage("adminEditProjectMessage");
+
+      const projectId = document.getElementById("editProjId").value;
+      const name = document.getElementById("editProjName").value.trim();
+      const owner_user_id = document.getElementById("editProjOwner").value;
+      const capacity = parseInt(document.getElementById("editProjCap").value, 10);
+
+      if (!projectId) {
+        showMessage("adminEditProjectMessage", "No se encontro el proyecto a editar.", "error");
+        return;
+      }
+      if (!owner_user_id) {
+        showMessage("adminEditProjectMessage", "Selecciona un socio para el proyecto.", "error");
+        return;
+      }
+
+      const description = document.getElementById("editProjDesc").value.trim();
+      const payload = {
+        name,
+        owner_user_id,
+        capacity,
+        clave_programa: document.getElementById("editProjClave").value.trim() || null,
+        description: description || null,
+        periodo: document.getElementById("editProjPeriodo").value.trim() || null,
+        carreras_permitidas: editCarrerasArr.length > 0 ? editCarrerasArr.join(", ") : null,
+        objetivo: document.getElementById("editProjObjetivo").value.trim() || null,
+        actividades: document.getElementById("editProjActividades").value.trim() || null,
+        horario: document.getElementById("editProjHorario").value.trim() || null,
+        competencias_requeridas: document.getElementById("editProjCompetencias").value.trim() || null,
+        modalidad: document.getElementById("editProjModalidad").value.trim() || null,
+        lugar_trabajo: document.getElementById("editProjLugar").value.trim() || null,
+        duracion: document.getElementById("editProjDuracion").value.trim() || null,
+        poblacion_atendida: document.getElementById("editProjPoblacion").value.trim() || null,
+        horas_acreditar: document.getElementById("editProjHoras").value.trim() || null,
+        comentarios_adicionales: description || null
+      };
+
+      try {
+        await requestJSON(`/admin/projects/${projectId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify(payload)
+        });
+
+        const imageFile = document.getElementById("editProjImageInput")?.files?.[0];
+        if (imageFile) {
+          const formData = new FormData();
+          formData.append("file", imageFile);
+          const response = await fetch(`/admin/projects/${projectId}/upload-image`, {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: formData
+          });
+          const uploadData = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(uploadData.detail || "El proyecto se actualizo, pero no se pudo subir la imagen.");
+          }
+        }
+
+        showMessage("adminEditProjectMessage", "Proyecto actualizado correctamente.", "success");
+        await loadAllProjectsFull();
+        await loadAdminMetrics();
+        setTimeout(() => {
+          document.getElementById("editProjectModal").style.display = "none";
+        }, 700);
+      } catch (error) {
+        showMessage("adminEditProjectMessage", error.message, "error");
+      }
     });
   }
 });

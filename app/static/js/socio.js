@@ -60,6 +60,24 @@ const CHART_CONFIG = {
   },
 };
 
+const SOC_ICONS = {
+  capacity: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 8h6M7 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  users: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 16c0-3 2.2-5 5-5s5 2 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14 8c1.3.2 3 1.4 3 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  seats: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10h10v5H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10V6a3 3 0 0 1 6 0v4" stroke="currentColor" stroke-width="1.5"/></svg>',
+  code: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 6 3 10l4 4M13 6l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  eye: '<svg class="soc-btn-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 10s2.7-5 7.5-5 7.5 5 7.5 5-2.7 5-7.5 5-7.5-5-7.5-5Z" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="2.2" stroke="currentColor" stroke-width="1.5"/></svg>',
+  plus: '<svg class="soc-btn-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  download: '<svg class="soc-btn-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3v9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M6.5 8.5 10 12l3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+};
+
+function projectButtonLabel(text) {
+  return `${SOC_ICONS.eye}${text}`;
+}
+
+function iconButtonLabel(icon, text) {
+  return `${icon}${text}`;
+}
+
 // ── Load projects ─────────────────────────────────────────
 async function loadSocioProjects() {
   const container = document.getElementById('projectsContainer');
@@ -139,19 +157,19 @@ async function loadSocioProjects() {
 
             <div class="soc-stats-row" style="margin-top:1rem;">
               <div class="soc-stat">
-                <span class="soc-stat-label">Capacidad</span>
+                <div class="soc-stat-head"><span class="soc-stat-icon">${SOC_ICONS.capacity}</span><span class="soc-stat-label">Capacidad</span></div>
                 <strong class="soc-stat-value">${escapeHtml(p.capacity)}</strong>
               </div>
               <div class="soc-stat">
-                <span class="soc-stat-label">Ocupados</span>
+                <div class="soc-stat-head"><span class="soc-stat-icon">${SOC_ICONS.users}</span><span class="soc-stat-label">Ocupados</span></div>
                 <strong class="soc-stat-value">${escapeHtml(p.taken_slots)}</strong>
               </div>
               <div class="soc-stat">
-                <span class="soc-stat-label">Disponibles</span>
+                <div class="soc-stat-head"><span class="soc-stat-icon">${SOC_ICONS.seats}</span><span class="soc-stat-label">Disponibles</span></div>
                 <strong class="soc-stat-value">${escapeHtml(p.remaining_slots)}</strong>
               </div>
               <div class="soc-stat">
-                <span class="soc-stat-label">Codigos</span>
+                <div class="soc-stat-head"><span class="soc-stat-icon">${SOC_ICONS.code}</span><span class="soc-stat-label">Codigos</span></div>
                 <strong class="soc-stat-value">${escapeHtml(p.active_codes)}</strong>
               </div>
             </div>
@@ -163,7 +181,7 @@ async function loadSocioProjects() {
 
           <div class="soc-card-footer">
             <button class="open-project-btn soc-btn soc-btn-outline soc-btn-sm" data-project-id="${p.id}">
-              Ver detalles
+              ${projectButtonLabel('Ver detalles')}
             </button>
           </div>
         </div>
@@ -217,7 +235,7 @@ async function loadSocioProjects() {
           detail.style.display = 'none';
           document.getElementById('generateCodePanel').style.display = 'none';
           document.getElementById('studentsPanel').style.display = 'none';
-          btn.textContent = 'Ver detalles';
+          btn.innerHTML = projectButtonLabel('Ver detalles');
           btn.classList.replace('soc-btn-primary', 'soc-btn-outline');
           document.querySelector(`.soc-project-card[data-project-id="${projectId}"]`)?.classList.remove('selected');
           localStorage.setItem('selectedProjectId', '');
@@ -226,12 +244,12 @@ async function loadSocioProjects() {
 
         // Reset todos
         document.querySelectorAll('.open-project-btn').forEach((b) => {
-          b.textContent = 'Ver detalles';
+          b.innerHTML = projectButtonLabel('Ver detalles');
           b.classList.replace('soc-btn-primary', 'soc-btn-outline');
         });
         document.querySelectorAll('.soc-project-card').forEach((c) => c.classList.remove('selected'));
 
-        btn.textContent = 'Ocultar detalles';
+        btn.innerHTML = projectButtonLabel('Ocultar detalles');
         btn.classList.replace('soc-btn-outline', 'soc-btn-primary');
         btn.closest('.soc-project-card')?.classList.add('selected');
 
@@ -320,7 +338,7 @@ async function generateSocioCode(projectId) {
   hideErr('generateCodeError');
 
   const btn = document.getElementById('quickGenerateCodeBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generando...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = iconButtonLabel(SOC_ICONS.plus, 'Generando...'); }
 
   try {
     const data = await requestJSON('/socio/temp-codes', {
@@ -345,7 +363,7 @@ async function generateSocioCode(projectId) {
   } catch (err) {
     showErr('generateCodeError', err.message);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Crear nuevo código'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = iconButtonLabel(SOC_ICONS.plus, 'Crear nuevo código'); }
   }
 }
 
@@ -412,7 +430,7 @@ function exportSocioStudents(projectId) {
   if (!token) { alert('No hay sesión activa.'); return; }
 
   const btn = document.getElementById('exportStudentsBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Exportando...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = iconButtonLabel(SOC_ICONS.download, 'Exportando...'); }
 
   fetch(`/socio/projects/${projectId}/students/export`, {
     method: 'GET',
@@ -438,7 +456,7 @@ function exportSocioStudents(projectId) {
     })
     .catch((err) => showErr('studentsError', err.message))
     .finally(() => {
-      if (btn) { btn.disabled = false; btn.textContent = 'Exportar CSV'; }
+      if (btn) { btn.disabled = false; btn.innerHTML = iconButtonLabel(SOC_ICONS.download, 'Exportar CSV'); }
     });
 }
 
@@ -493,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!id) return;
       const btn = document.querySelector(`.open-project-btn[data-project-id="${id}"]`);
       if (btn) {
-        btn.textContent = 'Ocultar detalles';
+        btn.innerHTML = projectButtonLabel('Ocultar detalles');
         btn.classList.replace('soc-btn-outline', 'soc-btn-primary');
         btn.closest('.soc-project-card')?.classList.add('selected');
       }
