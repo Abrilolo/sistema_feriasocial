@@ -1,6 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
-   UNIFIED THEME - Sistema Feria Social
-   Typography and reusable components
+   THEME UTILITIES - Sistema Feria Social
+   Typography and component utilities
+   (Buttons and inputs are defined in styles.css)
    (Colors come from theme-colors.css)
    ───────────────────────────────────────────────────────────── */
 
@@ -43,7 +44,7 @@ h3 {
   font-weight: 700;
 }
 
-/* ── UNIFIED CARDS/PANELS ──────────────────────────────────── */
+/* ── CARDS/PANELS ──────────────────────────────────────────── */
 .card, .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -59,122 +60,7 @@ h3 {
 }
 
 .card.with-accent, .panel.with-accent {
-  border-left: 4px solid var(--accent);
-}
-
-/* ── UNIFIED BUTTONS ───────────────────────────────────────── */
-button, .btn, input[type="submit"], input[type="button"] {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: var(--text);
-  border: none;
-  border-radius: 12px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px var(--shadow-accent);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: inherit;
-}
-
-button:hover, .btn:hover, input[type="submit"]:hover, input[type="button"]:hover {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-darker));
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px var(--shadow-accent);
-}
-
-button:active, .btn:active, input[type="submit"]:active, input[type="button"]:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px var(--shadow-accent);
-}
-
-button:disabled, .btn:disabled, input[type="submit"]:disabled, input[type="button"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Button variants */
-.btn-secondary {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.btn-secondary:hover {
-  background: var(--panel-soft);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.btn-success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.btn-success:hover {
-  background: linear-gradient(135deg, #059669, #047857);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #f43f5e, #e11d48);
-  color: white;
-}
-
-.btn-danger:hover {
-  background: linear-gradient(135deg, #e11d48, #c41245);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  box-shadow: none;
-}
-
-.btn-ghost:hover {
-  background: rgba(241,202,73,0.1);
-  border-color: var(--accent);
-}
-
-/* ── UNIFIED FORM INPUTS ───────────────────────────────────── */
-input, textarea, select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-input:hover, textarea:hover, select:hover {
-  border-color: var(--border-light);
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(241,202,73,0.12);
-  transform: translateY(-1px);
-}
-
-input::placeholder, textarea::placeholder {
-  color: var(--text-muted);
-}
-
-label {
-  display: block;
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
+  border-left: 4px solid var(--primary);
 }
 
 /* ── FORM GROUPS ───────────────────────────────────────────── */
@@ -194,7 +80,7 @@ label {
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--accent);
+  color: var(--primary);
   font-weight: 700;
 }
 
@@ -203,7 +89,7 @@ label {
   display: block;
   width: 1.75rem;
   height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: linear-gradient(90deg, var(--primary), transparent);
 }
 
 /* ── ERROR/SUCCESS/WARNING MESSAGES ────────────────────────── */
@@ -254,19 +140,23 @@ label {
   padding: 0.3rem 0.85rem;
   font-size: 0.65rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--primary);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-/* ── UTILITIES ─────────────────────────────────────────────── */
+/* ── TEXT UTILITIES ────────────────────────────────────────── */
 .text-muted {
   color: var(--text-muted);
 }
 
 .text-secondary {
   color: var(--text-secondary);
+}
+
+.text-center {
+  text-align: center;
 }
 
 .bg-soft {
